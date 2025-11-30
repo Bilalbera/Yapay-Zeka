@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş AI Sohbet (Tek Dosya)</title>
+    <title>BilalAI: Gelişmiş Sohbet ve Kodlama Asistanı</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -12,8 +12,18 @@
         /* Çıktı Alanı Stili */
         #output { border: 1px solid #ddd; padding: 15px; min-height: 200px; margin-bottom: 20px; border-radius: 8px; background-color: #f7f9fb; overflow-y: auto; max-height: 60vh; }
         
-        /* Kod Bloğu Stili - Belirginlik için */
-        pre { background-color: #272822; color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; position: relative; }
+        /* Kod Bloğu Stili - Belirginlik ve Kopyalanabilirlik */
+        pre { 
+            background-color: #272822; 
+            color: #f8f8f2; 
+            padding: 15px; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            font-size: 0.9em; 
+            position: relative; 
+            /* Kod üstüne kopyalama butonu eklemek isterseniz bu alandan devam edebilirsiniz */
+        }
         code { background-color: transparent; color: inherit; padding: 0; }
 
         /* Kullanıcı Giriş Alanı */
@@ -31,10 +41,10 @@
 <body>
 
 <div class="chat-container">
-    <h2>🚀 Gelişmiş AI Sohbet</h2>
-    <div id="output">Lütfen Gemini API Anahtarınızı girin ve bir soru sorun.</div>
+    <h2>🚀 BilalAI - Kod Asistanınız</h2>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Lütfen bir soru sorun, isterseniz direkt kod isteyin.</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Yapay zekaya bir şey sorun (Örn: JavaScript'te döngü nasıl yapılır?)...">
+        <input type="text" id="userInput" placeholder="Yapay zekaya bir şey sorun (Örn: Python'da 'Hello World' kodu ver)...">
         <button id="sendButton">Gönder</button>
         <div id="loader" class="loader"></div>
     </div>
@@ -42,8 +52,7 @@
 
 <script>
     // *******************************************************************
-    // !!! API Anahtarınızı BURAYA yerleştirin !!! 
-    // Anahtarınızı Google AI Studio'dan alabilirsiniz.
+    // !!! API Anahtarınız buraya yerleştirildi !!! 
     // *******************************************************************
     const API_KEY = "AIzaSyAtTbCNCtOQJDCnYUb9wKFaKfG6bU-69fk"; 
     
@@ -58,9 +67,9 @@
     // Markdown'dan HTML'e çeviri işlevi (Kod bloklarını <pre> olarak biçimlendirmek için)
     function formatResponse(text) {
         // Kullanıcının sorusu
-        let formattedHtml = `<p><strong>Siz:</strong> ${userInput.value.trim()}</p><hr>`;
+        const userPrompt = userInput.value.trim();
+        let formattedHtml = `<p><strong>Siz:</strong> ${userPrompt}</p><hr>`;
         
-        // AI cevabını biçimlendir
         // Kod bloklarını bul (``` dil_adı ... ```)
         const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
         
@@ -90,17 +99,13 @@
         const prompt = userInput.value.trim();
         if (!prompt) return;
 
-        // API anahtarı kontrolü
-        if (API_KEY === "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK" || !API_KEY) {
-            outputDiv.innerHTML = `<p style="color: red;"><strong>HATA:</strong> Lütfen JavaScript kodundaki <code>API_KEY</code> değişkenine kendi Gemini API Anahtarınızı girin.</p>`;
-            return;
-        }
-
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
         outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
-        userInput.value = ''; // Inputu temizle
+        
+        // Bu kısım, AI'yı kod odaklı yanıt vermeye yönlendiren sistem talimatıdır
+        const systemInstructionText = "Sen BilalAI adlı bir yapay zekasın. Kullanıcı kod istediğinde, cevabın sadece kodu ve kısa bir açıklamayı içermelidir. Uzun giriş ve çıkış metinlerinden kaçın. Mümkünse cevabını her zaman kod blokları içinde (```) ver.";
 
         try {
             const response = await fetch(API_URL, {
@@ -109,6 +114,12 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    config: {
+                        // Sistemin davranışını tanımlayan talimat
+                        systemInstruction: systemInstructionText,
+                        // Düşük sıcaklık, kod gibi kesin cevaplar için daha iyidir.
+                        temperature: 0.5 
+                    },
                     contents: [{ role: "user", parts: [{ text: prompt }] }]
                 })
             });
@@ -127,7 +138,7 @@
                 // Cevabı biçimlendirerek ekrana yaz
                 outputDiv.innerHTML = formatResponse(aiResponseText);
             } else {
-                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> Yapay zeka geçerli bir yanıt üretemedi. (Güvenlik filtreleri tetiklenmiş olabilir.)</p>`;
+                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Güvenlik filtreleri tetiklenmiş olabilir.)</p>`;
             }
 
         } catch (error) {
@@ -148,10 +159,6 @@
         }
     });
 
-    // Sayfa yüklendiğinde API kontrolünü yap
-    if (API_KEY !== "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK" && API_KEY) {
-        outputDiv.innerHTML = `<p><strong>Hoş geldiniz!</strong> Lütfen bir soru yazın ve Gönder'e tıklayın.</p>`;
-    }
 </script>
 
 </body>
