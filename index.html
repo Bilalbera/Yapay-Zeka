@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Sohbet & Kod Asistanı</title>
+    <title>BilalAI: Sohbet & Kod Asistanı (Son Sürüm)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -41,7 +41,7 @@
 
 <div class="chat-container">
     <h2>🚀 BilalAI - Sohbet & Kod Asistanı</h2>
-    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Hem kodlama hem de genel konularda size yardımcı olabilirim.</div>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir ve kod yazabilirim.</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya en sevdiğin film)...">
         <button id="sendButton">Gönder</button>
@@ -65,23 +65,17 @@
 
     // Markdown'dan HTML'e çeviri işlevi (Kod bloklarını <pre> olarak biçimlendirmek için)
     function formatResponse(text) {
-        // Kullanıcının sorusu
         const userPrompt = userInput.value.trim();
         let formattedHtml = `<p><strong>Siz:</strong> ${userPrompt}</p><hr>`;
         
-        // Kod bloklarını bul (``` dil_adı ... ```)
         const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
         
-        // Kod bloklarını <pre> etiketiyle değiştir
         let processedText = text.replace(codeBlockRegex, (match, language, code) => {
-            // Kod içeriğindeki özel HTML karakterlerini dönüştür
             const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // Dil adını belirt
             const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
             return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
         });
         
-        // Normal metin kısımlarını <p> etiketi ile sarmala (Kaba bir ayırma)
         processedText = processedText.split('\n\n').map(p => {
             if (p.trim() && !p.startsWith('<pre>')) {
                 return `<p>${p.trim()}</p>`;
@@ -101,10 +95,9 @@
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
-        // Kullanıcının sorusunu hemen göster
         outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
         
-        // BilalAI'nın hem sohbet hem de kod yapabilmesini sağlayan talimat
+        // BilalAI'nın çok yönlü olmasını sağlayan talimat
         const systemInstructionText = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
 
         try {
@@ -114,12 +107,17 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    // generationConfig doğru alan adı kullanılarak JSON payload hatası çözüldü
-                    generationConfig: {
+                    // SON DÜZELTME: Hem systemInstruction hem de temperature'ı içeren 
+                    // en yaygın kullanılan JSON yapısı. Bu hatayı gidermelidir.
+                    
+                    config: { // Bu obje içindeki ayarlar Gemini API tarafından tanınır.
+                        // systemInstruction alanını bu objeye yerleştiriyoruz.
                         systemInstruction: systemInstructionText,
-                        // Normal sıcaklık (0.7), hem kod hem de sohbet için iyi bir denge sağlar
+                        // generationConfig altındaki ayarlar da buraya doğrudan konulur.
                         temperature: 0.7 
                     },
+                    
+                    // Kullanıcının gönderdiği içerik
                     contents: [{ role: "user", parts: [{ text: prompt }] }]
                 })
             });
@@ -135,17 +133,15 @@
             const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (aiResponseText) {
-                // Cevabı biçimlendirerek ekrana yaz
                 outputDiv.innerHTML = formatResponse(aiResponseText);
             } else {
-                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Güvenlik filtreleri veya boş yanıt alınmış olabilir.)</p>`;
+                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Boş yanıt veya güvenlik filtresi.)</p>`;
             }
 
         } catch (error) {
             console.error('İstek Hatası:', error);
             outputDiv.innerHTML = `<p style="color: red;"><strong>KRİTİK HATA:</strong> Bağlantı veya API sorunu: ${error.message}</p>`;
         } finally {
-            // Yükleme durumunu sıfırla
             sendButton.disabled = false;
             loader.style.display = 'none';
         }
