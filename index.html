@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Gelişmiş Sohbet ve Kodlama Asistanı</title>
+    <title>BilalAI: Sohbet & Kod Asistanı</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -22,7 +22,6 @@
             font-family: 'Consolas', 'Courier New', monospace; 
             font-size: 0.9em; 
             position: relative; 
-            /* Kod üstüne kopyalama butonu eklemek isterseniz bu alandan devam edebilirsiniz */
         }
         code { background-color: transparent; color: inherit; padding: 0; }
 
@@ -41,10 +40,10 @@
 <body>
 
 <div class="chat-container">
-    <h2>🚀 BilalAI - Kod Asistanınız</h2>
-    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Lütfen bir soru sorun, isterseniz direkt kod isteyin.</div>
+    <h2>🚀 BilalAI - Sohbet & Kod Asistanı</h2>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Hem kodlama hem de genel konularda size yardımcı olabilirim.</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Yapay zekaya bir şey sorun (Örn: Python'da 'Hello World' kodu ver)...">
+        <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya en sevdiğin film)...">
         <button id="sendButton">Gönder</button>
         <div id="loader" class="loader"></div>
     </div>
@@ -102,10 +101,11 @@
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
+        // Kullanıcının sorusunu hemen göster
         outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
         
-        // Bu kısım, AI'yı kod odaklı yanıt vermeye yönlendiren sistem talimatıdır
-        const systemInstructionText = "Sen BilalAI adlı bir yapay zekasın. Kullanıcı kod istediğinde, cevabın sadece kodu ve kısa bir açıklamayı içermelidir. Uzun giriş ve çıkış metinlerinden kaçın. Mümkünse cevabını her zaman kod blokları içinde (```) ver.";
+        // BilalAI'nın hem sohbet hem de kod yapabilmesini sağlayan talimat
+        const systemInstructionText = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
 
         try {
             const response = await fetch(API_URL, {
@@ -114,11 +114,11 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    config: {
-                        // Sistemin davranışını tanımlayan talimat
+                    // generationConfig doğru alan adı kullanılarak JSON payload hatası çözüldü
+                    generationConfig: {
                         systemInstruction: systemInstructionText,
-                        // Düşük sıcaklık, kod gibi kesin cevaplar için daha iyidir.
-                        temperature: 0.5 
+                        // Normal sıcaklık (0.7), hem kod hem de sohbet için iyi bir denge sağlar
+                        temperature: 0.7 
                     },
                     contents: [{ role: "user", parts: [{ text: prompt }] }]
                 })
@@ -138,7 +138,7 @@
                 // Cevabı biçimlendirerek ekrana yaz
                 outputDiv.innerHTML = formatResponse(aiResponseText);
             } else {
-                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Güvenlik filtreleri tetiklenmiş olabilir.)</p>`;
+                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Güvenlik filtreleri veya boş yanıt alınmış olabilir.)</p>`;
             }
 
         } catch (error) {
