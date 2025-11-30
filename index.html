@@ -3,32 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tek Dosya AI Sohbet</title>
+    <title>Gelişmiş AI Sohbet (Tek Dosya)</title>
     <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; margin: 0; }
-        .chat-container { width: 90%; max-width: 600px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        #output { border: 1px solid #ccc; padding: 15px; min-height: 100px; margin-bottom: 15px; border-radius: 5px; background-color: #e9ecef; white-space: pre-wrap; }
-        #userInput { width: calc(100% - 70px); padding: 10px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; }
-        #sendButton { width: 60px; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
+        .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; }
+        
+        /* Çıktı Alanı Stili */
+        #output { border: 1px solid #ddd; padding: 15px; min-height: 200px; margin-bottom: 20px; border-radius: 8px; background-color: #f7f9fb; overflow-y: auto; max-height: 60vh; }
+        
+        /* Kod Bloğu Stili - Belirginlik için */
+        pre { background-color: #272822; color: #f8f8f2; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; position: relative; }
+        code { background-color: transparent; color: inherit; padding: 0; }
+
+        /* Kullanıcı Giriş Alanı */
+        .input-area { display: flex; gap: 10px; }
+        #userInput { flex-grow: 1; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        #sendButton { padding: 12px 25px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; transition: background-color 0.3s; }
         #sendButton:hover { background-color: #0056b3; }
-        .input-area { display: flex; }
+        #sendButton:disabled { background-color: #adb5bd; cursor: not-allowed; }
+
+        /* Yükleme Simgesi */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin-left: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <h2>Basit AI Sohbet</h2>
-    <div id="output">Cevap burada görünecek...</div>
+    <h2>🚀 Gelişmiş AI Sohbet</h2>
+    <div id="output">Lütfen Gemini API Anahtarınızı girin ve bir soru sorun.</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Bir şeyler yazın...">
+        <input type="text" id="userInput" placeholder="Yapay zekaya bir şey sorun (Örn: JavaScript'te döngü nasıl yapılır?)...">
         <button id="sendButton">Gönder</button>
+        <div id="loader" class="loader"></div>
     </div>
 </div>
 
 <script>
-    // **********************************************************
-    // !!! BURAYI KENDİ API ANAHTARINIZLA DEĞİŞTİRMEYİ UNUTMAYIN !!!
-    // **********************************************************
+    // *******************************************************************
+    // !!! API Anahtarınızı BURAYA yerleştirin !!! 
+    // Anahtarınızı Google AI Studio'dan alabilirsiniz.
+    // *******************************************************************
     const API_KEY = "AIzaSyAtTbCNCtOQJDCnYUb9wKFaKfG6bU-69fk"; 
     
     // API endpoint ve model adı
@@ -37,14 +53,53 @@
     const userInput = document.getElementById('userInput');
     const sendButton = document.getElementById('sendButton');
     const outputDiv = document.getElementById('output');
+    const loader = document.getElementById('loader');
+
+    // Markdown'dan HTML'e çeviri işlevi (Kod bloklarını <pre> olarak biçimlendirmek için)
+    function formatResponse(text) {
+        // Kullanıcının sorusu
+        let formattedHtml = `<p><strong>Siz:</strong> ${userInput.value.trim()}</p><hr>`;
+        
+        // AI cevabını biçimlendir
+        // Kod bloklarını bul (``` dil_adı ... ```)
+        const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+        
+        // Kod bloklarını <pre> etiketiyle değiştir
+        let processedText = text.replace(codeBlockRegex, (match, language, code) => {
+            // Kod içeriğindeki özel HTML karakterlerini dönüştür
+            const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Dil adını belirt
+            const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
+            return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
+        });
+        
+        // Normal metin kısımlarını <p> etiketi ile sarmala (Kaba bir ayırma)
+        processedText = processedText.split('\n\n').map(p => {
+            if (p.trim() && !p.startsWith('<pre>')) {
+                return `<p>${p.trim()}</p>`;
+            }
+            return p;
+        }).join('');
+
+        formattedHtml += processedText;
+        return formattedHtml;
+    }
 
     // Gönderme İşlevi
     async function sendMessage() {
         const prompt = userInput.value.trim();
         if (!prompt) return;
 
-        // Kullanıcı girdisini göster
-        outputDiv.textContent = `Siz: ${prompt}\n\nAI: Cevap bekleniyor...`;
+        // API anahtarı kontrolü
+        if (API_KEY === "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK" || !API_KEY) {
+            outputDiv.innerHTML = `<p style="color: red;"><strong>HATA:</strong> Lütfen JavaScript kodundaki <code>API_KEY</code> değişkenine kendi Gemini API Anahtarınızı girin.</p>`;
+            return;
+        }
+
+        // Yükleme durumu ayarları
+        sendButton.disabled = true;
+        loader.style.display = 'block';
+        outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
         userInput.value = ''; // Inputu temizle
 
         try {
@@ -60,18 +115,28 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`API Hatası: ${response.status} - ${errorData.error.message}`);
+                throw new Error(`API İstek Hatası (${response.status}): ${errorData.error.message}`);
             }
 
             const data = await response.json();
             
-            // Cevabı al ve ekrana yaz
-            const aiResponse = data.candidates[0].content.parts[0].text;
-            outputDiv.textContent = `Siz: ${prompt}\n\nAI: ${aiResponse}`;
+            // Cevabı al
+            const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (aiResponseText) {
+                // Cevabı biçimlendirerek ekrana yaz
+                outputDiv.innerHTML = formatResponse(aiResponseText);
+            } else {
+                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> Yapay zeka geçerli bir yanıt üretemedi. (Güvenlik filtreleri tetiklenmiş olabilir.)</p>`;
+            }
 
         } catch (error) {
             console.error('İstek Hatası:', error);
-            outputDiv.textContent = `Hata oluştu: ${error.message}. API Anahtarınızı kontrol edin.`;
+            outputDiv.innerHTML = `<p style="color: red;"><strong>KRİTİK HATA:</strong> Bağlantı veya API sorunu: ${error.message}</p>`;
+        } finally {
+            // Yükleme durumunu sıfırla
+            sendButton.disabled = false;
+            loader.style.display = 'none';
         }
     }
 
@@ -83,9 +148,9 @@
         }
     });
 
-    // Başlangıç uyarısı
-    if (API_KEY === "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK") {
-        outputDiv.textContent = "Lütfen API Anahtarınızı 'API_KEY' değişkenine girin ve sayfayı yenileyin.";
+    // Sayfa yüklendiğinde API kontrolünü yap
+    if (API_KEY !== "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK" && API_KEY) {
+        outputDiv.innerHTML = `<p><strong>Hoş geldiniz!</strong> Lütfen bir soru yazın ve Gönder'e tıklayın.</p>`;
     }
 </script>
 
