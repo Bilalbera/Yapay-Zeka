@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Sohbet & Kod Asistanı</title>
+    <title>BilalAI: Hafızalı Sohbet & Kod Asistanı</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -40,10 +40,10 @@
 <body>
 
 <div class="chat-container">
-    <h2>🚀 BilalAI - Sohbet & Kod Asistanı</h2>
-    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir ve kod yazabilirim.</div>
+    <h2>🧠 BilalAI - Hafızalı Asistan</h2>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Önceki konuşmalarımızı hatırlayarak size yardımcı olabilirim.</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya en sevdiğin film)...">
+        <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: Önceki kodda şunu değiştir)...">
         <button id="sendButton">Gönder</button>
         <div id="loader" class="loader"></div>
     </div>
@@ -63,28 +63,58 @@
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
 
-    // Markdown'dan HTML'e çeviri işlevi
-    function formatResponse(text) {
-        const userPrompt = userInput.value.trim();
-        let formattedHtml = `<p><strong>Siz:</strong> ${userPrompt}</p><hr>`;
-        
-        const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-        
-        let processedText = text.replace(codeBlockRegex, (match, language, code) => {
-            const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
-            return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
-        });
-        
-        processedText = processedText.split('\n\n').map(p => {
-            if (p.trim() && !p.startsWith('<pre>')) {
-                return `<p>${p.trim()}</p>`;
-            }
-            return p;
-        }).join('');
+    // KONUŞMA GEÇMİŞİ (HAFIZA) DİZİSİ
+    // Bu dizi, her başarılı kullanıcı-AI mesaj çiftini saklar.
+    const conversationHistory = []; 
 
-        formattedHtml += processedText;
-        return formattedHtml;
+    // Konuşma geçmişini HTML olarak biçimlendirip ekrana yazan işlev.
+    function formatHistory() {
+        // Ekranı temizle
+        outputDiv.innerHTML = ''; 
+        
+        // Sistem Talimatı (Sadece görüntüden çıkarmak için gerekli)
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
+
+        // Geçmişteki her bir konuşma sırasını (turn) döngüye al
+        conversationHistory.forEach(turn => {
+            const isUser = turn.role === "user";
+            let text = turn.parts[0].text;
+            
+            // Eğer rol kullanıcı ise, AI'a gönderilen bağlamı (systemContext) metinden temizle
+            if (isUser) {
+                // Kullanıcının gerçek sorusunu bul ve temizle
+                const userQuestionMatch = text.match(/Kullanıcı sorusu: ([\s\S]*)/);
+                if (userQuestionMatch) {
+                    text = userQuestionMatch[1].trim();
+                } else {
+                    // Güvenlik amaçlı, sadece bağlamı kaldır
+                    text = text.replace(systemContext, '').replace('Kullanıcı sorusu:', '').trim();
+                }
+                outputDiv.innerHTML += `<p><strong>Siz:</strong> ${text}</p>`;
+            } else {
+                // AI yanıtını biçimlendir (Kod bloklarını HTML'e çevir)
+                const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+                let processedText = text.replace(codeBlockRegex, (match, language, code) => {
+                    const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
+                    return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
+                });
+                
+                // Normal metin paragraflarını ayır ve biçimlendir
+                processedText = processedText.split('\n\n').map(p => {
+                    if (p.trim() && !p.startsWith('<pre>')) {
+                        return `<p>${p.trim()}</p>`;
+                    }
+                    return p;
+                }).join('');
+                
+                outputDiv.innerHTML += `<p><strong>BilalAI:</strong></p>${processedText}`;
+            }
+            outputDiv.innerHTML += '<hr>';
+        });
+
+        // Sayfayı her zaman en alta kaydır
+        outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
     // Gönderme İşlevi
@@ -95,13 +125,20 @@
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
-        outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
+        outputDiv.innerHTML += `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
+        userInput.value = '';
         
-        // BilalAI'nın çok yönlü olmasını sağlayan talimat (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
+        // BilalAI'nın talimatı (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
         const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
         
-        // Final Prompt: Talimat + Kullanıcının sorusu
-        const finalPrompt = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
+        // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
+        const finalPromptForRequest = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
+
+        // İsteğe dahil edilecek geçerli kullanıcı mesajı
+        const currentUserMessage = { role: "user", parts: [{ text: finalPromptForRequest }] };
+        
+        // İsteğe gönderilecek içerik = Tüm geçmiş + mevcut mesaj
+        const contentsForRequest = [...conversationHistory, currentUserMessage]; 
 
         try {
             const response = await fetch(API_URL, {
@@ -110,14 +147,9 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    // Yalnızca "user" rolü kullanılıyor (API hatasını çözmek için)
-                    
-                    contents: [
-                        { role: "user", parts: [{ text: finalPrompt }] } // Kullanıcının sorusu + bağlam
-                    ],
+                    contents: contentsForRequest,
                     
                     generationConfig: {
-                        // generationConfig ana seviyede yer almalıdır
                         temperature: 0.7 
                     }
                 })
@@ -130,21 +162,27 @@
 
             const data = await response.json();
             
-            // Cevabı al
             const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (aiResponseText) {
-                outputDiv.innerHTML = formatResponse(aiResponseText);
+                // BAŞARILI: Mesajları GEÇMİŞE EKLE
+                conversationHistory.push(currentUserMessage);
+                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
+                // TÜM GEÇMİŞİ yeniden çiz
+                formatHistory();
             } else {
-                outputDiv.innerHTML = `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Boş yanıt veya güvenlik filtresi.)</p>`;
+                outputDiv.innerHTML += `<p style="color: orange;"><strong>UYARI:</strong> BilalAI geçerli bir yanıt üretemedi. (Boş yanıt veya güvenlik filtresi.)</p>`;
             }
 
         } catch (error) {
             console.error('İstek Hatası:', error);
-            outputDiv.innerHTML = `<p style="color: red;"><strong>KRİTİK HATA:</strong> Bağlantı veya API sorunu: ${error.message}</p>`;
+            // Sadece hata mesajını ekrana bas, geçmişi güncelleme
+            outputDiv.innerHTML += `<p style="color: red;"><strong>KRİTİK HATA:</strong> Bağlantı veya API sorunu: ${error.message}</p>`;
         } finally {
             sendButton.disabled = false;
             loader.style.display = 'none';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
         }
     }
 
