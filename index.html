@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Sohbet & Kod Asistanı (Kesin Sürüm)</title>
+    <title>BilalAI: Sohbet & Kod Asistanı</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -40,7 +40,7 @@
 <body>
 
 <div class="chat-container">
-    <h2>🚀 BilalAI - Türk Yapay Zeka!</h2>
+    <h2>🚀 BilalAI - Sohbet & Kod Asistanı</h2>
     <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir ve kod yazabilirim.</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya en sevdiğin film)...">
@@ -97,8 +97,11 @@
         loader.style.display = 'block';
         outputDiv.innerHTML = `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
         
-        // BilalAI'nın çok yönlü olmasını sağlayan talimat
-        const systemInstructionText = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
+        // BilalAI'nın çok yönlü olmasını sağlayan talimat (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
+        
+        // Final Prompt: Talimat + Kullanıcının sorusu
+        const finalPrompt = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
 
         try {
             const response = await fetch(API_URL, {
@@ -107,12 +110,10 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    // KESİN DÜZELTME: systemInstruction, 'config' veya 'generationConfig' dışında,
-                    // 'contents' dizisinin ilk elemanı olarak, 'system' rolüyle gönderilir.
+                    // Yalnızca "user" rolü kullanılıyor (API hatasını çözmek için)
                     
                     contents: [
-                        { role: "system", parts: [{ text: systemInstructionText }] }, // System talimatı
-                        { role: "user", parts: [{ text: prompt }] } // Kullanıcının sorusu
+                        { role: "user", parts: [{ text: finalPrompt }] } // Kullanıcının sorusu + bağlam
                     ],
                     
                     generationConfig: {
