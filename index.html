@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tek Dosya AI Sohbet</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; margin: 0; }
+        .chat-container { width: 90%; max-width: 600px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #output { border: 1px solid #ccc; padding: 15px; min-height: 100px; margin-bottom: 15px; border-radius: 5px; background-color: #e9ecef; white-space: pre-wrap; }
+        #userInput { width: calc(100% - 70px); padding: 10px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; }
+        #sendButton { width: 60px; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        #sendButton:hover { background-color: #0056b3; }
+        .input-area { display: flex; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <h2>Basit AI Sohbet</h2>
+    <div id="output">Cevap burada görünecek...</div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Bir şeyler yazın...">
+        <button id="sendButton">Gönder</button>
+    </div>
+</div>
+
+<script>
+    // **********************************************************
+    // !!! BURAYI KENDİ API ANAHTARINIZLA DEĞİŞTİRMEYİ UNUTMAYIN !!!
+    // **********************************************************
+    const API_KEY = "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK"; 
+    
+    // API endpoint ve model adı
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    const outputDiv = document.getElementById('output');
+
+    // Gönderme İşlevi
+    async function sendMessage() {
+        const prompt = userInput.value.trim();
+        if (!prompt) return;
+
+        // Kullanıcı girdisini göster
+        outputDiv.textContent = `Siz: ${prompt}\n\nAI: Cevap bekleniyor...`;
+        userInput.value = ''; // Inputu temizle
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{ role: "user", parts: [{ text: prompt }] }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`API Hatası: ${response.status} - ${errorData.error.message}`);
+            }
+
+            const data = await response.json();
+            
+            // Cevabı al ve ekrana yaz
+            const aiResponse = data.candidates[0].content.parts[0].text;
+            outputDiv.textContent = `Siz: ${prompt}\n\nAI: ${aiResponse}`;
+
+        } catch (error) {
+            console.error('İstek Hatası:', error);
+            outputDiv.textContent = `Hata oluştu: ${error.message}. API Anahtarınızı kontrol edin.`;
+        }
+    }
+
+    // Olay Dinleyicileri
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Başlangıç uyarısı
+    if (API_KEY === "BURAYA_SENİN_GEMINI_API_ANAHTARIN_GELECEK") {
+        outputDiv.textContent = "Lütfen API Anahtarınızı 'API_KEY' değişkenine girin ve sayfayı yenileyin.";
+    }
+</script>
+
+</body>
+</html>
