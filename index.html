@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Sohbet & Kod Asistanı (Son Sürüm)</title>
+    <title>BilalAI: Sohbet & Kod Asistanı (Kesin Sürüm)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -40,7 +40,7 @@
 <body>
 
 <div class="chat-container">
-    <h2>🚀 BilalAI - Sohbet & Kod Asistanı</h2>
+    <h2>🚀 BilalAI - Türk Yapay Zeka!</h2>
     <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir ve kod yazabilirim.</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya en sevdiğin film)...">
@@ -63,7 +63,7 @@
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
 
-    // Markdown'dan HTML'e çeviri işlevi (Kod bloklarını <pre> olarak biçimlendirmek için)
+    // Markdown'dan HTML'e çeviri işlevi
     function formatResponse(text) {
         const userPrompt = userInput.value.trim();
         let formattedHtml = `<p><strong>Siz:</strong> ${userPrompt}</p><hr>`;
@@ -107,18 +107,18 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    // SON DÜZELTME: Hem systemInstruction hem de temperature'ı içeren 
-                    // en yaygın kullanılan JSON yapısı. Bu hatayı gidermelidir.
+                    // KESİN DÜZELTME: systemInstruction, 'config' veya 'generationConfig' dışında,
+                    // 'contents' dizisinin ilk elemanı olarak, 'system' rolüyle gönderilir.
                     
-                    config: { // Bu obje içindeki ayarlar Gemini API tarafından tanınır.
-                        // systemInstruction alanını bu objeye yerleştiriyoruz.
-                        systemInstruction: systemInstructionText,
-                        // generationConfig altındaki ayarlar da buraya doğrudan konulur.
+                    contents: [
+                        { role: "system", parts: [{ text: systemInstructionText }] }, // System talimatı
+                        { role: "user", parts: [{ text: prompt }] } // Kullanıcının sorusu
+                    ],
+                    
+                    generationConfig: {
+                        // generationConfig ana seviyede yer almalıdır
                         temperature: 0.7 
-                    },
-                    
-                    // Kullanıcının gönderdiği içerik
-                    contents: [{ role: "user", parts: [{ text: prompt }] }]
+                    }
                 })
             });
 
