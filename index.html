@@ -7,7 +7,7 @@
   <style>
     body {
       background: #0d0d0d;
-      color: white;
+      color: #ffcc00;
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
@@ -72,7 +72,7 @@
     button {
       padding: 10px 16px;
       background: #1e90ff;
-      color: white;
+      color: #ffcc00;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -108,6 +108,11 @@
   <script>
     // Basit soru-cevap sözlüğü (geliştirilebilir)
     const qa = {
+      "tp": "Bir oyuncuya ışınlanmak için: /tp <oyuncu_adı> komutunu kullanabilirsin.",
+      "tp nasıl": "TP atmak için: /tp <oyuncu_adı> komutunu yaz.",
+      "tp nasıl atılır": "Bir oyuncuya ışınlanmak için /tp <oyuncu_adı> komutunu kullan.",
+      "şikayet": "Bir oyuncuyu şikayet etmek için: /report <oyuncu_adı> <sebep> komutunu yaz.",
+      "oyuncu şikayet": "Şikayet için /report <oyuncu_adı> <sebep> komutunu kullanabilirsin.",
       "ip": "BeyazAtom Sunucusu IP: beyazatom.com",
       "ip adresi": "BeyazAtom Sunucusu IP: beyazatom.com",
       "kaç gb": "Sunucu 16 GB RAM ile çalışmaktadır.",
@@ -123,13 +128,13 @@
       "lobiye": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
       "nasıl lobiye giderim": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
 
-      "sandık market": "Sandıktan market yapmak için ChestCommands, DeluxeMenus veya ShopGUIPlus gibi eklentiler kullanılır. Sandığa sağ tıklayınca menü açılır.",
+      "sandık market": "Sandıktan market yapmak için eline satacağın itemi alıp satmak istediğin sandığa . Sandığa sağ tıklayınca menü açılır.",
       "sandiktan market": "Sandıktan market yapmak için ChestCommands, DeluxeMenus veya ShopGUIPlus gibi eklentiler kullanılır.",
-      "sandık market nasıl": "Sandıktan market yapmak için bir GUI plugin gerekir. (ChestCommands, DeluxeMenus vs.)",
+      "sandık market nasıl yapılır": "Sandıktan market yapmak için bir GUI plugin gerekir. (ChestCommands, DeluxeMenus vs.)",
 
       "site": "Sitemize gitmek için: https://beyazatom.com",
-      "siteye nasıl giderim": "Sitemize gitmek için tarayıcıya yaz: beyazatom.com",
-      "web site": "Resmi site: beyazatom.com"
+      "siteye nasıl giderim": "BeyazAtom sitesine gitmek için: beyazatom.com",
+      "web site": "BeyazAtom sitesine gitmek için: beyazatom.com"
     };
 
     // BilalAİ'nin cevap üretme fonksiyonu
@@ -203,5 +208,17 @@
     addMessage('Merhaba! Ben BilalAİ — BeyazAtom sunucu asistanıyım. Nasıl yardımcı olabilirim?', 'bot');
 
   </script>
+  <!-- Uyarı Popup -->
+  <div id="bilalAiWarning" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: white; padding: 20px; width: 350px; border-radius: 12px; text-align: center; font-family: Arial;">
+      <h2 style="color: red; font-weight: bold;">UYARI</h2>
+      <p style="font-size: 14px; margin-top: 10px;">
+        BilalAİ, BeyazAtom Minecraft Sunucusu Yardımcısı hala gelişim aşamasındadır.<br>
+        Bir hata bulursanız veya öneri yazmak isterseniz <b>bilalbera</b> oyuncusuna bildiriniz.
+      </p>
+      <p style="font-size: 12px; color: gray; margin-top: 10px;">Sürüm 0.1</p>
+      <button onclick="document.getElementById('bilalAiWarning').style.display='none'" style="margin-top: 15px; padding: 8px 15px; border: none; background: #00aaff; color: #ffcc00; border-radius: 6px; cursor: pointer; font-size: 14px;">Tamam</button>
+    </div>
+  </div>
 </body>
 </html>
