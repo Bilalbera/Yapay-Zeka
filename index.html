@@ -1,545 +1,207 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Tam Sürüm Sohbet, Kod & Görsel Asistanı</title>
-    <style>
-        /* Genel Stiller */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #e9eef2;
-            margin: 0;
-        }
-        .chat-container {
-            width: 95%;
-            max-width: 800px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            min-height: 85vh;
-        }
-        h2 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        /* Çıktı Alanı Stili */
-        #output {
-            flex-grow: 1;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background-color: #f7f9fb;
-            overflow-y: auto;
-            max-height: 70vh;
-            border: 1px solid #ddd;
-        }
-
-        /* Mesaj Balonları Stilleri */
-        .message-turn {
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            border-radius: 12px;
-            clear: both;
-            max-width: 85%;
-            word-wrap: break-word;
-        }
-        .user-message {
-            background-color: #007bff;
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 2px;
-            float: right;
-        }
-        .ai-message {
-            background-color: #ffffff;
-            border: 1px solid #e9eef2;
-            color: #333;
-            margin-right: auto;
-            border-bottom-left-radius: 2px;
-            float: left;
-        }
-        .message-turn strong:first-child {
-            display: block;
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
-        #output p {
-            margin: 0 0 10px 0;
-            line-height: 1.6;
-            font-weight: normal;
-        }
-        #output h3, #output h4 {
-            margin-top: 15px;
-            margin-bottom: 10px;
-            color: #0056b3;
-            border-bottom: 1px dashed #e0e0e0;
-            padding-bottom: 5px;
-        }
-        #output hr { display: none; }
-
-        /* Kod Bloğu Stili */
-        pre {
-            background-color: #272822;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.9em;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        :not(pre) > code {
-            background-color: #e0e7ff;
-            color: #1a4d94;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        /* Liste Stili */
-        #output ul {
-            list-style: disc inside;
-            padding-left: 20px;
-            margin: 10px 0;
-        }
-        #output li {
-            margin-bottom: 5px;
-            line-height: 1.5;
-        }
-
-        /* Görsel çıktısı için stil */
-        #output img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-top: 15px;
-            margin-bottom: 15px;
-            display: block;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        /* Kullanıcı Giriş Alanı */
-        .input-area {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-        #userInput {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1em;
-            min-height: 50px;
-            resize: vertical;
-            min-width: 0;
-        }
-        #sendButton {
-            padding: 12px 25px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-            flex-shrink: 0;
-            height: 50px;
-        }
-        #sendButton:hover { background-color: #0056b3; }
-        #sendButton:disabled { background-color: #adb5bd; cursor: not-allowed; }
-
-        /* Yükleme Simgesi */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: none;
-            margin: auto 0 auto 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* MODAL STİLLERİ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            animation: fadeIn 0.3s ease-out;
-        }
-        .modal-content h3 {
-            color: #007bff;
-            margin-top: 0;
-            font-size: 1.5em;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
-        .modal-content p {
-            font-size: 1em;
-            color: #555;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .modal-content small {
-            display: block;
-            margin-top: 15px;
-            color: #888;
-            font-size: 0.85em;
-        }
-        #modal-ok-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-        }
-        #modal-ok-button:hover { background-color: #0056b3; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BilalAİ - BeyazAtom Sunucu Asistanı</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #111;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.06);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+    #chat-box {
+      height: 340px;
+      overflow-y: auto;
+      padding: 12px;
+      border: 1px solid #222;
+      border-radius: 10px;
+      background: #0f0f0f;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .msg {
+      margin: 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 80%;
+      word-break: break-word;
+    }
+    .user {
+      background: #1e90ff;
+      align-self: flex-end;
+      color: #fff;
+    }
+    .bot {
+      background: #2f2f2f;
+      align-self: flex-start;
+      color: #fff;
+    }
+    #input-area {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #222;
+      background: #0b0b0b;
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+    button {
+      padding: 10px 16px;
+      background: #1e90ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    button:hover { background: #0f6ad4; }
+    .examples { margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap }
+    .examples button { background:#333; padding:6px 10px; font-size:13px }
+    .meta { font-size:13px; color:#bbb; text-align:center; margin-bottom:8px }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>BilalAİ - BeyazAtom Asistanı</h1>
+    <div class="meta">Test soruları: butonlara tıklayarak BilalAİ'yi test edebilirsin.</div>
 
-<div id="welcomeModal" class="modal-overlay">
-    <div class="modal-content">
-        <h3>BilalAI Tam Sürüm</h3>
-        <p>Lütfen JavaScript kodundaki **API_KEY** alanını kendi **Gemini API Anahtarınızla** değiştirin. Hata ve önerileriniz için teşekkürler!</p>
-        <button id="modal-ok-button">Anlaşıldı</button>
-        <small>Sürüm 1.0</small>
+    <div id="chat-box" aria-live="polite"></div>
+
+    <div id="input-area">
+      <input id="user-input" placeholder="Sorunu yaz... (Enter ile gönder)" autocomplete="off" />
+      <button id="send-btn">Gönder</button>
     </div>
-</div>
 
-<div class="chat-container">
-    <h2> BilalAI - Türk Yapım Yapay Zeka! 🇹🇷</h2>
-    <div id="output"></div>
-    <div class="input-area">
-        <textarea id="userInput" rows="3" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)..."></textarea>
-        <button id="sendButton">Gönder</button>
-        <div id="loader" class="loader"></div>
+    <div class="examples">
+      <button data-q="Lobiye nasıl gidebilirim?">Lobiye nasıl gidebilirim?</button>
+      <button data-q="Sunucu ip ne?">Sunucu IP</button>
+      <button data-q="Kaç GB ram var?">RAM</button>
+      <button data-q="Discord var mı?">Discord</button>
+      <button data-q="Sunucu sürümünü söyler misin?">Sürüm</button>
     </div>
-</div>
+  </div>
 
-<script>
-    // *******************************************************************
-    // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!!
-    // *******************************************************************
-    // GEÇERLİ BİR ANAHTAR KULLANMANIZ ŞARTTIR.
-    const API_KEY = "AIzaSyChiJsYckDX74Drl0cZTFr3-8T7bfLH0Us"; // Lütfen bu kısmı değiştirin
+  <script>
+    // Basit soru-cevap sözlüğü (geliştirilebilir)
+    const qa = {
+      "ip": "BeyazAtom Sunucusu IP: beyazatom.com",
+      "ip adresi": "BeyazAtom Sunucusu IP: beyazatom.com",
+      "kaç gb": "Sunucu 16 GB RAM ile çalışmaktadır.",
+      "ram": "Sunucu 16 GB RAM ile çalışmaktadır.",
+      "discord": "Discord sunucumuz: discord.gg/beyazatom",
+      "discord sunucusu": "Discord sunucumuz: discord.gg/beyazatom",
+      "sürüm": "Sunucu 1.19.2 - 1.21.10 sürümünde çalışmaktadır.",
+      "sunucu sürümü": "Sunucu 1.19.2 - 1.21.10 sürümünde çalışmaktadır.",
+      "owner": "Sunucu sahibi: BeyazAtom",
+      "sahip": "Sunucu sahibi: BeyazAtom",
+      "lobi": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
+      "hub": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
+      "lobiye": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
+      "nasıl lobiye giderim": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
 
-    // -------------------------------------------------------------------
-    // Model ve API URL'si
-    // -------------------------------------------------------------------
-    const MODEL_NAME = 'gemini-2.5-flash';
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
-    
-    // **Sistem Talimatı:** Görsel oluşturma komutu ve rol tanımı.
-    const systemContext = `Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (\`\`\`) içinde ver. Kullanıcı görsel oluşturmanı istediğinde (Örn: "mavi kedi resmi çiz"), cevabın sadece https://googleusercontent.com/image_generation_content/0<image-tokens-bardstorage://RESPONSE_DATA:xxx>PROMPT_PLACEHOLDER.png formatında bir taklit görsel URL'si olmalıdır. Başka hiçbir metin ekleme.`;
-    const systemContextCheck = "Kullanıcı sorusu:"; // Kullanıcı sorusunu ayıklamak için sabit metin
+      "sandık market": "Sandıktan market yapmak için ChestCommands, DeluxeMenus veya ShopGUIPlus gibi eklentiler kullanılır. Sandığa sağ tıklayınca menü açılır.",
+      "sandiktan market": "Sandıktan market yapmak için ChestCommands, DeluxeMenus veya ShopGUIPlus gibi eklentiler kullanılır.",
+      "sandık market nasıl": "Sandıktan market yapmak için bir GUI plugin gerekir. (ChestCommands, DeluxeMenus vs.)",
 
-    const userInput = document.getElementById('userInput');
-    const sendButton = document.getElementById('sendButton');
-    const outputDiv = document.getElementById('output');
-    const loader = document.getElementById('loader');
-
-    // Yeni Modal Elementleri
-    const welcomeModal = document.getElementById('welcomeModal');
-    const modalOkButton = document.getElementById('modal-ok-button');
-
-    // KONUŞMA GEÇMİŞİ (HAFIZA) DİZİSİ - Sadece temiz mesajları tutar
-    // Sistem Talimatı da bu geçmişe eklenecek, ancak rolü 'model' olarak atanacak.
-    const conversationHistory = [];
-
-    // İlk Hoş Geldiniz Mesajı
-    function displayInitialMessage() {
-        outputDiv.innerHTML = `<div class="message-turn ai-message">
-                                <strong>BilalAI</strong>
-                                <p><strong>Hoş geldiniz!</strong> Ben BilalAI. Nasıl yardımcı olabilirim?</p>
-                            </div>`;
-    }
-
-    // Modal Kapatma İşlevi
-    function closeModal() {
-        welcomeModal.style.display = 'none';
-    }
-
-    // Modal'ı Kapatma Olayı
-    modalOkButton.addEventListener('click', closeModal);
-
-    // Konuşma geçmişini HTML olarak biçimlendirip ekrana yazan işlev.
-    function formatHistory() {
-        outputDiv.innerHTML = '';
-        
-        // Hoşgeldiniz mesajını tekrar göster (Geçmiş boşsa)
-        if (conversationHistory.length === 0) {
-            displayInitialMessage();
-            return;
-        }
-
-        // Taklit Görsel URL Regex'i
-        const imageUrlRegex = /https?:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:\/\/[^>]+>([^\s]+)\.png/g;
-        
-        conversationHistory.forEach(turn => {
-            // Sistem talimatlarını gösterme (eğer turn.role "system" olsaydı)
-            if (turn.role === "system") return;
-
-            const isUser = turn.role === "user";
-            // Not: Kullanıcı mesajındaki sistem talimatı kısmını temizleyelim
-            let text = isUser 
-                        ? turn.parts[0].text.replace(new RegExp(`^${systemContext.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*\\n\\n${systemContextCheck}`), '') 
-                        : turn.parts[0].text;
-            
-            // Eğer temizleme sonrası metin sadece boşluk kalırsa gösterilmesin.
-            if (!text.trim() && isUser) return;
-            
-            let finalHtml = '';
-            
-            if (isUser) {
-                // Kullanıcı mesajı
-                finalHtml = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-                
-                outputDiv.innerHTML += `<div class="message-turn user-message">
-                                            <strong>Siz</strong>
-                                            ${finalHtml}
-                                        </div>`;
-            } else {
-                // AI yanıtını biçimlendir (Markdown to HTML dönüşümü)
-                let processedText = text;
-
-                // 1. Görsel URL'lerini <img> etiketlerine çevir
-                processedText = processedText.replace(imageUrlRegex, (match) => {
-                    return `<img src="${match.match(/(https?:\/\/[^\s]+)/)[0]}" alt="Oluşturulan Görsel">`;
-                });
-
-                // 2. Kod bloklarını <pre> etiketiyle değiştir
-                const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-                processedText = processedText.replace(codeBlockRegex, (match, language, code) => {
-                    const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    const langDisplay = language ? `// Dil: ${language.toUpperCase()}\n\n` : '';
-                    return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
-                });
-                
-                // 3. Markdown formatını HTML'e çevir (Başlıklar, Bold, İtalik)
-                // Paragraf ayracı olarak boş satırları kullanıyoruz, bu yüzden basit değişimler yapıldı.
-                processedText = processedText
-                    .replace(/### (.*)/g, '<h4>$1</h4>')
-                    .replace(/## (.*)/g, '<h3>$1</h3>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                // 4. Listeleri ve Paragrafları Yönetme
-                let listWrappedText = '';
-                const parts = processedText.split('\n');
-                let inList = false;
-
-                for (const line of parts) {
-                    if (line.trim().startsWith('- ')) { // Basit Markdown liste kontrolü
-                        const listItemHtml = `<li>${line.trim().substring(2)}</li>`;
-                        if (!inList) {
-                            listWrappedText += '<ul>';
-                            inList = true;
-                        }
-                        listWrappedText += listItemHtml;
-                    } else {
-                        if (inList) {
-                            listWrappedText += '</ul>';
-                            inList = false;
-                        }
-                        // Kod, Resim ve Başlıklar hariç metinleri <p> etiketine al
-                        if (line.trim() && !line.match(/<pre|<\/pre>|<img|<h/i)) {
-                            listWrappedText += `<p>${line.replace(/\n/g, '<br>')}</p>`;
-                        } else {
-                            listWrappedText += line; // Diğer HTML etiketlerini olduğu gibi bırak
-                        }
-                    }
-                }
-                if (inList) { listWrappedText += '</ul>'; }
-                finalHtml = listWrappedText;
-
-                outputDiv.innerHTML += `<div class="message-turn ai-message">
-                                            <strong>BilalAI</strong>
-                                            ${finalHtml}
-                                        </div>`;
-            }
-        });
-
-        // Sayfayı her zaman en alta kaydır
-        outputDiv.scrollTop = outputDiv.scrollHeight;
-    }
-
-    // Gönderme İşlevi
-    async function sendMessage() {
-        const prompt = userInput.value.trim();
-        if (!prompt) return;
-
-        // API Anahtarı Kontrolü
-        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("AIzaSyA") || API_KEY.endsWith("mo")) {
-            outputDiv.innerHTML += `<div class="message-turn ai-message" style="border-color: red;">
-                                        <strong>HATA:</strong>
-                                        <p style="color: red;">Lütfen **geçerli bir API anahtarı** girin. (Anahtarınız eksik veya hatalı görünüyor.)</p>
-                                    </div>`;
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-            return;
-        }
-
-        // Yükleme durumu ayarları
-        sendButton.disabled = true;
-        loader.style.display = 'block';
-        
-        const cleanUserMessage = prompt;
-        
-        // Geçici yükleme mesajını ekle
-        outputDiv.innerHTML += `<div class="message-turn user-message">
-                                    <strong>Siz</strong>
-                                    <p>${cleanUserMessage}</p>
-                                </div>
-                                <div class="message-turn ai-message" id="temp-loader-msg" style="opacity: 0.7;">
-                                    <strong>BilalAI</strong>
-                                    <p>Cevap bekleniyor...</p>
-                                </div>`;
-
-        outputDiv.scrollTop = outputDiv.scrollHeight;
-        userInput.value = '';
-
-        // SİSTEM TALİMATI DİNAMİK OLARAK GÜNCELLENDİ (Görsel prompt'u için)
-        const dynamicSystemContext = systemContext.replace('PROMPT_PLACEHOLDER', prompt.replace(/[^a-zA-Z0-9]/g, '_'));
-
-        // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
-        // Talimat, sohbet geçmişi içindeki ilk mesaj olarak değil, mevcut mesajın parçası olarak gönderilir.
-        const finalPromptForRequest = `${dynamicSystemContext}\n\n${systemContextCheck}${prompt}`;
-        
-        // API'ye gönderilecek içerik (Geçmiş + Son Mesaj)
-        // Düzeltme: Sistem talimatı her seferinde gönderildiği için, geçmişteki mesajları temiz tutmalıyız.
-        const contentsForRequest = [
-            ...conversationHistory, // Geçmişteki temiz mesajlar
-            // SİSTEM TALİMATI + KULLANICI SORUSU TEK MESAJDA GÖNDERİLİR.
-            { role: "user", parts: [{ text: finalPromptForRequest }] }
-        ];
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: contentsForRequest,
-                    // *** KRİTİK DÜZELTME: "config" yerine "generationConfig" kullanılmalı! ***
-                    generationConfig: { temperature: 0.7 }
-                })
-            });
-
-            // Yükleme mesajını kaldır
-            const tempMsg = document.getElementById('temp-loader-msg');
-            if (tempMsg) tempMsg.remove();
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`API İstek Hatası (${response.status}): ${errorData.error?.message || response.statusText}`);
-            }
-
-            const data = await response.json();
-            
-            const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            
-            if (aiResponseText) {
-                // BAŞARILI: Mesajları GEÇMİŞE EKLE (Temiz olarak)
-                // Not: Kullanıcının attığı finalPromptForRequest'in tamamı geçmişe ekleniyor (Sistem talimatı dahil).
-                conversationHistory.push({ role: "user", parts: [{ text: finalPromptForRequest }] });
-                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
-
-                // TÜM GEÇMİŞİ yeniden çiz
-                formatHistory();
-            } else {
-                // Güvenlik filtresi veya boş yanıt
-                const blockReasons = data.candidates?.[0]?.finishReason;
-                const safetyRatings = data.candidates?.[0]?.safetyRatings;
-                
-                let errorMessage = "BilalAI geçerli bir yanıt üretemedi.";
-                if (blockReasons === 'SAFETY') {
-                    errorMessage += ` (Güvenlik filtresi nedeniyle engellendi. Detaylar: ${JSON.stringify(safetyRatings)})`;
-                }
-
-                outputDiv.innerHTML += `<div class="message-turn ai-message" style="border-color: orange;">
-                                            <strong>UYARI:</strong>
-                                            <p style="color: orange;">${errorMessage}</p>
-                                        </div>`;
-            }
-
-        } catch (error) {
-            console.error('İstek Hatası:', error);
-            // Hata mesajını ekrana bas
-            const tempMsg = document.getElementById('temp-loader-msg');
-            if (tempMsg) tempMsg.remove();
-            
-            outputDiv.innerHTML += `<div class="message-turn ai-message" style="border-color: red;">
-                                        <strong>KRİTİK HATA:</strong>
-                                        <p style="color: red;">Bağlantı veya API sorunu: ${error.message}</p>
-                                    </div>`;
-        } finally {
-            sendButton.disabled = false;
-            loader.style.display = 'none';
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-        }
-    }
-
-    // Olay Dinleyicileri
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // Textarea'nın içeriği değiştiğinde butonu etkinleştir/devre dışı bırak
-    userInput.addEventListener('input', () => {
-        sendButton.disabled = userInput.value.trim().length === 0;
-    });
-
-    // Sayfa yüklendiğinde ilk mesajı göster ve modal'ı göster
-    window.onload = function() {
-        displayInitialMessage();
-        welcomeModal.style.display = 'flex'; // Modal'ı göster
-        sendButton.disabled = true; // Başlangıçta butonu devre dışı bırak
+      "site": "Sitemize gitmek için: https://beyazatom.com",
+      "siteye nasıl giderim": "Sitemize gitmek için tarayıcıya yaz: beyazatom.com",
+      "web site": "Resmi site: beyazatom.com"
     };
-</script>
 
+    // BilalAİ'nin cevap üretme fonksiyonu
+    function botReply(rawMsg) {
+      if (!rawMsg) return "Bir şey yazmalısın 😊";
+      const msg = rawMsg.toLowerCase().trim();
+
+      // 1) Tam anahtar eşleşmesi
+      if (qa[msg]) return qa[msg];
+
+      // 2) Anahtar kelime içermesi
+      for (const key in qa) {
+        if (msg.includes(key)) return qa[key];
+      }
+
+      // 3) Kelime bazlı en basit yakın eşleşme (tek kelime kontrolü)
+      const words = msg.split(/\s+/);
+      for (const w of words) {
+        for (const key in qa) {
+          if (w === key || key.includes(w)) return qa[key];
+        }
+      }
+
+      // 4) Hiçbir eşleşme bulunmadıysa daha açıklayıcı fallback
+      return "BilalAİ bunu tam anlayamadı. Örnek sorular: 'lobi', 'ip', 'discord', 'kaç gb ram'.";
+    }
+
+    // DOM elemanları
+    const input = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatBox = document.getElementById('chat-box');
+
+    // Mesaj ekleme fonksiyonu
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = 'msg ' + sender;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Tek tanımlı sendMessage fonksiyonu (hata buradaydı, şimdi düzeltilmiş)
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      // Bot cevabını asenkron simüle et (hızlı)
+      setTimeout(() => {
+        const reply = botReply(text);
+        addMessage(reply, 'bot');
+      }, 250);
+
+      input.value = '';
+      input.focus();
+    }
+
+    // Event listener'lar
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+    // Örnek test butonları (test vakaları)
+    document.querySelectorAll('.examples button').forEach(b => {
+      b.addEventListener('click', () => {
+        input.value = b.getAttribute('data-q');
+        sendMessage();
+      });
+    });
+
+    // Başlangıç mesajı (test amaçlı)
+    addMessage('Merhaba! Ben BilalAİ — BeyazAtom sunucu asistanıyım. Nasıl yardımcı olabilirim?', 'bot');
+
+  </script>
 </body>
 </html>
