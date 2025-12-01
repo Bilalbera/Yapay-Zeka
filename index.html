@@ -25,6 +25,15 @@
         }
         code { background-color: transparent; color: inherit; padding: 0; }
 
+        /* Görsel çıktısı için stil */
+        #output img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: block; /* Metinle çakışmaması için */
+        }
+
         /* Kullanıcı Giriş Alanı */
         .input-area { display: flex; gap: 10px; }
         #userInput { flex-grow: 1; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
@@ -41,7 +50,7 @@
 
 <div class="chat-container">
     <h2>🎨 BilalAI - Sohbet, Kod & Görsel Asistanı</h2>
-    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **görsel oluşturma isteklerinizi alabilirim**!</div>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)...">
         <button id="sendButton">Gönder</button>
@@ -72,7 +81,10 @@
         outputDiv.innerHTML = ''; 
         
         // Sistem Talimatı (Sadece görüntüden çıkarmak için gerekli)
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir.";
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra sadece görselin URL'sini <img src='GÖRSEL_URL'> şeklinde döndür. Başka hiçbir metin ekleme.";
+
+        // Görsel URL kalıbı (http://googleusercontent.com/image_generation_content/...)
+        const imageUrlRegex = /http:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:\/\/[^>]+>/g;
 
         // Geçmişteki her bir konuşma sırasını (turn) döngüye al
         conversationHistory.forEach(turn => {
@@ -91,17 +103,27 @@
                 }
                 outputDiv.innerHTML += `<p><strong>Siz:</strong> ${text}</p>`;
             } else {
-                // AI yanıtını biçimlendir (Kod bloklarını HTML'e çevir)
+                // AI yanıtını biçimlendir (Kod bloklarını ve GÖRSEL URL'lerini HTML'e çevir)
+                let processedText = text;
+
+                // 1. Görsel URL'lerini <img> etiketlerine çevir
+                processedText = processedText.replace(imageUrlRegex, (match) => {
+                    // match içindeki token'ları ve fazlalıkları temizleyerek sadece URL kısmını al
+                    const cleanedUrl = match.replace(/<image-tokens-bardstorage:\/\/[^>]+>/, '');
+                    return `<img src="${cleanedUrl}" alt="Oluşturulan Görsel">`;
+                });
+
+                // 2. Kod bloklarını <pre> etiketiyle değiştir
                 const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-                let processedText = text.replace(codeBlockRegex, (match, language, code) => {
+                processedText = processedText.replace(codeBlockRegex, (match, language, code) => {
                     const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
                     return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
                 });
                 
-                // Normal metin paragraflarını ayır ve biçimlendir
+                // 3. Normal metin paragraflarını ayır ve biçimlendir
                 processedText = processedText.split('\n\n').map(p => {
-                    if (p.trim() && !p.startsWith('<pre>')) {
+                    if (p.trim() && !p.startsWith('<pre>') && !p.startsWith('<img')) { // img etiketlerini de atla
                         return `<p>${p.trim()}</p>`;
                     }
                     return p;
@@ -135,8 +157,8 @@
         userInput.value = '';
         
         // BilalAI'nın talimatı (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
-        // Görsel oluşturma yeteneği eklendi
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir.";
+        // Görsel oluşturma yeteneği ve özel çıktı formatı eklendi
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra başka hiçbir metin eklemeden, sadece oluşturulan görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Bu URL formatını doğrudan kullan.";
         
         // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
         const finalPromptForRequest = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
@@ -205,4 +227,3 @@
 
 </body>
 </html>
-````http://googleusercontent.com/image_generation_content/0
