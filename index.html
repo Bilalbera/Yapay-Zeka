@@ -21,10 +21,10 @@
             background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* Daha belirgin gölge */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             display: flex;
             flex-direction: column;
-            min-height: 85vh; /* Yüksekliği sabitlemek için */
+            min-height: 85vh;
         }
         h2 {
             color: #333;
@@ -33,16 +33,15 @@
             margin-top: 0;
             margin-bottom: 20px;
         }
-        
         /* Çıktı Alanı Stili */
         #output {
-            flex-grow: 1; /* Geriye kalan tüm alanı kapla */
+            flex-grow: 1;
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 8px;
             background-color: #f7f9fb;
             overflow-y: auto;
-            max-height: 70vh; /* Maksimum yükseklik sınırı */
+            max-height: 70vh;
             border: 1px solid #ddd;
         }
 
@@ -53,7 +52,7 @@
             border-radius: 12px;
             clear: both;
             max-width: 85%;
-            word-wrap: break-word; /* Uzun kelimeleri kırma */
+            word-wrap: break-word;
         }
         .user-message {
             background-color: #007bff;
@@ -89,7 +88,7 @@
             border-bottom: 1px dashed #e0e0e0;
             padding-bottom: 5px;
         }
-        #output hr { display: none; } /* Yatay çizgileri kaldır */
+        #output hr { display: none; }
 
         /* Kod Bloğu Stili */
         pre {
@@ -102,7 +101,7 @@
             font-size: 0.9em;
             margin-top: 10px;
             margin-bottom: 10px;
-            white-space: pre-wrap; /* Uzun satırları otomatik kırma */
+            white-space: pre-wrap;
             word-wrap: break-word;
         }
         :not(pre) > code {
@@ -135,20 +134,20 @@
         }
 
         /* Kullanıcı Giriş Alanı */
-        .input-area { 
-            display: flex; 
-            gap: 10px; 
-            align-items: flex-end; /* Öğeleri aşağı hizalar */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
         }
-        #userInput { /* Input yerine TEXTAREA kullanıldı */
+        #userInput {
             flex-grow: 1;
             padding: 12px;
             border: 1px solid #ced4da;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 1em;
-            min-height: 50px; /* Textarea için minimum yükseklik */
-            resize: vertical; /* Sadece dikey yeniden boyutlandırma */
+            min-height: 50px;
+            resize: vertical;
             min-width: 0;
         }
         #sendButton {
@@ -161,7 +160,7 @@
             font-size: 1em;
             transition: background-color 0.3s;
             flex-shrink: 0;
-            height: 50px; /* Buton yüksekliğini eşitlemek için */
+            height: 50px;
         }
         #sendButton:hover { background-color: #0056b3; }
         #sendButton:disabled { background-color: #adb5bd; cursor: not-allowed; }
@@ -179,18 +178,18 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- MODAL STİLLERİ (YENİ EKLENEN) --- */
+        /* MODAL STİLLERİ */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* Hafif karartma */
-            display: none; /* Varsayılan olarak gizli tutulacak, JS ile açılacak */
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Her şeyin üstünde görünmesini sağla */
+            z-index: 1000;
         }
         .modal-content {
             background: white;
@@ -231,10 +230,7 @@
             font-size: 1em;
             transition: background-color 0.3s;
         }
-        #modal-ok-button:hover {
-            background-color: #0056b3;
-        }
-        /* Pop-up animasyonu */
+        #modal-ok-button:hover { background-color: #0056b3; }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
@@ -245,16 +241,16 @@
 
 <div id="welcomeModal" class="modal-overlay">
     <div class="modal-content">
-        <h3>BilalAI Deneme Aşamasındadır</h3>
-        <p>Bulduğunuz **hataları** ve **önerilerinizi** BeyazAtom Minecraft Sunucusunda **bilalbera** oyuncusuna bildirin.</p>
-        <button id="modal-ok-button">Tamam</button>
-        <small>Sürüm 0.1</small>
+        <h3>BilalAI Tam Sürüm</h3>
+        <p>Lütfen JavaScript kodundaki **API_KEY** alanını kendi **Gemini API Anahtarınızla** değiştirin. Hata ve önerileriniz için teşekkürler!</p>
+        <button id="modal-ok-button">Anlaşıldı</button>
+        <small>Sürüm 1.0</small>
     </div>
 </div>
 
 <div class="chat-container">
     <h2> BilalAI - Türk Yapım Yapay Zeka! 🇹🇷</h2>
-    <div id="output"></div> 
+    <div id="output"></div>
     <div class="input-area">
         <textarea id="userInput" rows="3" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)..."></textarea>
         <button id="sendButton">Gönder</button>
@@ -264,19 +260,19 @@
 
 <script>
     // *******************************************************************
-    // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!! 
+    // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!!
     // *******************************************************************
-    // LÜTFEN BU YER TUTUCU ANAHTARI KENDİ GERÇEK ANAHTARINIZLA DEĞİŞTİRİN
-    const API_KEY = "AIzaSyChiJsYckDX74Drl0cZTFr3-8T7bfLH0Us"; 
-    
+    // GEÇERLİ BİR ANAHTAR KULLANMANIZ ŞARTTIR.
+    const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; // Lütfen bu kısmı değiştirin
+
     // -------------------------------------------------------------------
     // Model ve API URL'si
     // -------------------------------------------------------------------
     const MODEL_NAME = 'gemini-2.5-flash';
-    const API_URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
     
     // **Sistem Talimatı:** Görsel oluşturma komutu ve rol tanımı.
-    const systemContext = `Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (\`\`\`) içinde ver. Kullanıcı görsel oluşturmanı istediğinde (Örn: "mavi kedi resmi çiz"), cevabın sadece **https://googleusercontent.com/image_generation_content/0<image-tokens-bardstorage://RESPONSE_DATA:xxx>${'PROMPT_PLACEHOLDER'.replace(/[^a-zA-Z0-9]/g, '_')}.png** formatında bir taklit görsel URL'si olmalıdır. Başka hiçbir metin ekleme.`;
+    const systemContext = `Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (\`\`\`) içinde ver. Kullanıcı görsel oluşturmanı istediğinde (Örn: "mavi kedi resmi çiz"), cevabın sadece https://googleusercontent.com/image_generation_content/0<image-tokens-bardstorage://RESPONSE_DATA:xxx>PROMPT_PLACEHOLDER.png formatında bir taklit görsel URL'si olmalıdır. Başka hiçbir metin ekleme.`;
     const systemContextCheck = "Kullanıcı sorusu:"; // Kullanıcı sorusunu ayıklamak için sabit metin
 
     const userInput = document.getElementById('userInput');
@@ -289,13 +285,14 @@
     const modalOkButton = document.getElementById('modal-ok-button');
 
     // KONUŞMA GEÇMİŞİ (HAFIZA) DİZİSİ - Sadece temiz mesajları tutar
-    const conversationHistory = []; 
+    // Sistem Talimatı da bu geçmişe eklenecek, ancak rolü 'model' olarak atanacak.
+    const conversationHistory = [];
 
     // İlk Hoş Geldiniz Mesajı
     function displayInitialMessage() {
         outputDiv.innerHTML = `<div class="message-turn ai-message">
                                 <strong>BilalAI</strong>
-                                <p><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!</p>
+                                <p><strong>Hoş geldiniz!</strong> Ben BilalAI. Nasıl yardımcı olabilirim?</p>
                             </div>`;
     }
 
@@ -311,22 +308,33 @@
     function formatHistory() {
         outputDiv.innerHTML = '';
         
+        // Hoşgeldiniz mesajını tekrar göster (Geçmiş boşsa)
         if (conversationHistory.length === 0) {
             displayInitialMessage();
             return;
         }
 
+        // Taklit Görsel URL Regex'i
         const imageUrlRegex = /https?:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:\/\/[^>]+>([^\s]+)\.png/g;
-        // Not: Regex, URL'nin tamamını yakalaması için düzenlendi.
-
+        
         conversationHistory.forEach(turn => {
+            // Sistem talimatlarını gösterme (eğer turn.role "system" olsaydı)
+            if (turn.role === "system") return;
+
             const isUser = turn.role === "user";
-            let text = turn.parts[0].text;
+            // Not: Kullanıcı mesajındaki sistem talimatı kısmını temizleyelim
+            let text = isUser 
+                        ? turn.parts[0].text.replace(new RegExp(`^${systemContext.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*\\n\\n${systemContextCheck}`), '') 
+                        : turn.parts[0].text;
+            
+            // Eğer temizleme sonrası metin sadece boşluk kalırsa gösterilmesin.
+            if (!text.trim() && isUser) return;
+            
             let finalHtml = '';
             
             if (isUser) {
-                // Kullanıcı mesajı (Zaten temiz)
-                finalHtml = text.replace(/\n/g, '<br>');
+                // Kullanıcı mesajı
+                finalHtml = `<p>${text.replace(/\n/g, '<br>')}</p>`;
                 
                 outputDiv.innerHTML += `<div class="message-turn user-message">
                                             <strong>Siz</strong>
@@ -337,12 +345,11 @@
                 let processedText = text;
 
                 // 1. Görsel URL'lerini <img> etiketlerine çevir
-                processedText = processedText.replace(imageUrlRegex, (match, url) => {
-                    // url zaten PROMPT_PLACEHOLDER.png ile bitiyor
+                processedText = processedText.replace(imageUrlRegex, (match) => {
                     return `<img src="${match.match(/(https?:\/\/[^\s]+)/)[0]}" alt="Oluşturulan Görsel">`;
                 });
 
-                // 2. Kod bloklarını <pre> etiketiyle değiştir (İlk işlenmeli)
+                // 2. Kod bloklarını <pre> etiketiyle değiştir
                 const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
                 processedText = processedText.replace(codeBlockRegex, (match, language, code) => {
                     const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -351,56 +358,41 @@
                 });
                 
                 // 3. Markdown formatını HTML'e çevir (Başlıklar, Bold, İtalik)
+                // Paragraf ayracı olarak boş satırları kullanıyoruz, bu yüzden basit değişimler yapıldı.
                 processedText = processedText
-                    .replace(/### (.*)/g, '<h4>$1</h4>') 
+                    .replace(/### (.*)/g, '<h4>$1</h4>')
                     .replace(/## (.*)/g, '<h3>$1</h3>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/^- (.*)$/gm, '<li>$1</li>'); // Madde işaretli listeler
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-                // 4. Listeleri <ul> etiketlerine sar (Basit sarma)
+                // 4. Listeleri ve Paragrafları Yönetme
                 let listWrappedText = '';
                 const parts = processedText.split('\n');
                 let inList = false;
 
                 for (const line of parts) {
-                    if (line.startsWith('<li>')) {
+                    if (line.trim().startsWith('- ')) { // Basit Markdown liste kontrolü
+                        const listItemHtml = `<li>${line.trim().substring(2)}</li>`;
                         if (!inList) {
                             listWrappedText += '<ul>';
                             inList = true;
                         }
-                        listWrappedText += line;
+                        listWrappedText += listItemHtml;
                     } else {
                         if (inList) {
                             listWrappedText += '</ul>';
                             inList = false;
                         }
-                        // Boşlukları yönetmek için <br> yerine <p> kullanımı
-                        if (line.trim()) {
-                             listWrappedText += `<p>${line.replace(/\n/g, '<br>')}</p>`;
+                        // Kod, Resim ve Başlıklar hariç metinleri <p> etiketine al
+                        if (line.trim() && !line.match(/<pre|<\/pre>|<img|<h/i)) {
+                            listWrappedText += `<p>${line.replace(/\n/g, '<br>')}</p>`;
+                        } else {
+                            listWrappedText += line; // Diğer HTML etiketlerini olduğu gibi bırak
                         }
                     }
                 }
                 if (inList) { listWrappedText += '</ul>'; }
-                processedText = listWrappedText;
-
-                // 5. <pre> ve <img> dışındaki metin bloklarını yönet
-                const htmlParts = processedText.split(/(<pre>[\s\S]*?<\/pre>|<img[\s\S]*?>|<h3>[\s\S]*?<\/h3>|<h4>[\s\S]*?<\/h4>|<ul>[\s\S]*?<\/ul>)/);
-                
-                htmlParts.forEach(part => {
-                    if (part) {
-                        if (part.startsWith('<pre') || part.startsWith('<img') || part.startsWith('<h') || part.startsWith('<ul')) {
-                            finalHtml += part;
-                        } else {
-                            // Paragraf veya liste dışı metinleri <p> etiketleri arasına al
-                            part.split('\n\n').forEach(p => {
-                                if (p.trim()) {
-                                    finalHtml += `<p>${p.trim().replace(/\n/g, '<br>')}</p>`;
-                                }
-                            });
-                        }
-                    }
-                });
+                finalHtml = listWrappedText;
 
                 outputDiv.innerHTML += `<div class="message-turn ai-message">
                                             <strong>BilalAI</strong>
@@ -419,7 +411,7 @@
         if (!prompt) return;
 
         // API Anahtarı Kontrolü
-        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("AIzaSyA") || API_KEY.endsWith("mo")) { 
+        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("AIzaSyA") || API_KEY.endsWith("mo")) {
             outputDiv.innerHTML += `<div class="message-turn ai-message" style="border-color: red;">
                                         <strong>HATA:</strong>
                                         <p style="color: red;">Lütfen **geçerli bir API anahtarı** girin. (Anahtarınız eksik veya hatalı görünüyor.)</p>
@@ -432,22 +424,18 @@
         sendButton.disabled = true;
         loader.style.display = 'block';
         
-        const cleanUserMessage = prompt; 
+        const cleanUserMessage = prompt;
         
-        // Kullanıcıya gönderilen metin (geçmişe eklenecek temiz metin)
-        const currentUserMessageForHistory = { role: "user", parts: [{ text: cleanUserMessage }] }; 
-        
-        // Geçici yükleme mesajı (Ekranı anında güncelle)
-        const loadingHtml = `<div class="message-turn user-message">
-                                <strong>Siz</strong>
-                                ${cleanUserMessage}
-                              </div>
-                              <div class="message-turn ai-message" id="temp-loader-msg" style="opacity: 0.7;">
-                                <strong>BilalAI</strong>
-                                <p>Cevap bekleniyor...</p>
-                            </div>`;
+        // Geçici yükleme mesajını ekle
+        outputDiv.innerHTML += `<div class="message-turn user-message">
+                                    <strong>Siz</strong>
+                                    <p>${cleanUserMessage}</p>
+                                </div>
+                                <div class="message-turn ai-message" id="temp-loader-msg" style="opacity: 0.7;">
+                                    <strong>BilalAI</strong>
+                                    <p>Cevap bekleniyor...</p>
+                                </div>`;
 
-        outputDiv.innerHTML += loadingHtml;
         outputDiv.scrollTop = outputDiv.scrollHeight;
         userInput.value = '';
 
@@ -455,12 +443,15 @@
         const dynamicSystemContext = systemContext.replace('PROMPT_PLACEHOLDER', prompt.replace(/[^a-zA-Z0-9]/g, '_'));
 
         // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
+        // Talimat, sohbet geçmişi içindeki ilk mesaj olarak değil, mevcut mesajın parçası olarak gönderilir.
         const finalPromptForRequest = `${dynamicSystemContext}\n\n${systemContextCheck}${prompt}`;
         
         // API'ye gönderilecek içerik (Geçmiş + Son Mesaj)
+        // Düzeltme: Sistem talimatı her seferinde gönderildiği için, geçmişteki mesajları temiz tutmalıyız.
         const contentsForRequest = [
             ...conversationHistory, // Geçmişteki temiz mesajlar
-            { role: "user", parts: [{ text: finalPromptForRequest }] } // Mevcut mesajı talimatla gönder
+            // SİSTEM TALİMATI + KULLANICI SORUSU TEK MESAJDA GÖNDERİLİR.
+            { role: "user", parts: [{ text: finalPromptForRequest }] }
         ];
 
         try {
@@ -469,7 +460,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: contentsForRequest,
-                    config: { temperature: 0.7 }
+                    // *** KRİTİK DÜZELTME: "config" yerine "generationConfig" kullanılmalı! ***
+                    generationConfig: { temperature: 0.7 }
                 })
             });
 
@@ -479,7 +471,7 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`API İstek Hatası (${response.status}): ${errorData.error.message}`);
+                throw new Error(`API İstek Hatası (${response.status}): ${errorData.error?.message || response.statusText}`);
             }
 
             const data = await response.json();
@@ -488,15 +480,25 @@
             
             if (aiResponseText) {
                 // BAŞARILI: Mesajları GEÇMİŞE EKLE (Temiz olarak)
-                conversationHistory.push(currentUserMessageForHistory); // Kullanıcının temiz mesajı
-                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] }); // AI'nın yanıtı
+                // Not: Kullanıcının attığı finalPromptForRequest'in tamamı geçmişe ekleniyor (Sistem talimatı dahil).
+                conversationHistory.push({ role: "user", parts: [{ text: finalPromptForRequest }] });
+                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
 
                 // TÜM GEÇMİŞİ yeniden çiz
                 formatHistory();
             } else {
+                // Güvenlik filtresi veya boş yanıt
+                const blockReasons = data.candidates?.[0]?.finishReason;
+                const safetyRatings = data.candidates?.[0]?.safetyRatings;
+                
+                let errorMessage = "BilalAI geçerli bir yanıt üretemedi.";
+                if (blockReasons === 'SAFETY') {
+                    errorMessage += ` (Güvenlik filtresi nedeniyle engellendi. Detaylar: ${JSON.stringify(safetyRatings)})`;
+                }
+
                 outputDiv.innerHTML += `<div class="message-turn ai-message" style="border-color: orange;">
                                             <strong>UYARI:</strong>
-                                            <p style="color: orange;">BilalAI geçerli bir yanıt üretemedi. (Boş yanıt, güvenlik filtresi veya 'blockReasons' kontrol edin.)</p>
+                                            <p style="color: orange;">${errorMessage}</p>
                                         </div>`;
             }
 
@@ -520,16 +522,22 @@
     // Olay Dinleyicileri
     sendButton.addEventListener('click', sendMessage);
     userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { // Shift+Enter satır atlamak için kalsın
-            e.preventDefault(); // Varsayılan satır atlamayı engelle
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             sendMessage();
         }
+    });
+    
+    // Textarea'nın içeriği değiştiğinde butonu etkinleştir/devre dışı bırak
+    userInput.addEventListener('input', () => {
+        sendButton.disabled = userInput.value.trim().length === 0;
     });
 
     // Sayfa yüklendiğinde ilk mesajı göster ve modal'ı göster
     window.onload = function() {
         displayInitialMessage();
         welcomeModal.style.display = 'flex'; // Modal'ı göster
+        sendButton.disabled = true; // Başlangıçta butonu devre dışı bırak
     };
 </script>
 
