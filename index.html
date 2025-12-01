@@ -179,7 +179,7 @@
         if (!prompt) return;
 
         // DÜZELTME 4: API ANAHTARI KONTROLÜ İYİLEŞTİRİLDİ
-        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("AIzaSyA")) { // API anahtarları genellikle 39 karakterdir.
+        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("Ah")) { // API anahtarları genellikle 39 karakterdir.
             outputDiv.innerHTML += `<p style="color: red;"><strong>HATA:</strong> Lütfen **geçerli bir API anahtarı** girin. (Anahtarınız eksik veya hatalı görünüyor.)</p>`;
             return;
         }
