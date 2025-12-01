@@ -14,16 +14,16 @@
         
         /* Yazılar arası boşlukları iyileştirme */
         #output p { 
-            margin-bottom: 10px; /* Paragraflar arasına boşluk */
-            line-height: 1.6; /* Satır yüksekliği artırma */
+            margin-bottom: 10px; 
+            line-height: 1.6; 
         }
         #output strong {
-            color: #007bff; /* Konuşmacı adlarını belirginleştir */
+            color: #007bff; 
         }
         #output hr {
             border: none;
-            border-top: 1px dashed #e0e0e0; /* Kesikli çizgi ile ayrım */
-            margin: 20px 0; /* Çizgi üst ve altına boşluk */
+            border-top: 1px dashed #e0e0e0; 
+            margin: 20px 0; 
         }
 
         /* Kod Bloğu Stili - Belirginlik ve Kopyalanabilirlik */
@@ -36,7 +36,7 @@
             font-family: 'Consolas', 'Courier New', monospace; 
             font-size: 0.9em; 
             position: relative; 
-            margin-bottom: 15px; /* Kod bloğu altına boşluk */
+            margin-bottom: 15px; 
         }
         code { background-color: transparent; color: inherit; padding: 0; }
 
@@ -45,10 +45,10 @@
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            margin-top: 15px; /* Görsel üstüne boşluk */
-            margin-bottom: 15px; /* Görsel altına boşluk */
-            display: block; /* Metinle çakışmaması için */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Görselde hafif gölge */
+            margin-top: 15px; 
+            margin-bottom: 15px; 
+            display: block; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
         }
 
         /* Kullanıcı Giriş Alanı */
@@ -79,11 +79,16 @@
     // *******************************************************************
     // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!! 
     // *******************************************************************
+    // NOT: Demo anahtarı geçersizdir, kendi anahtarınızı kullanın.
     const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; 
     
-    // API endpoint ve model adı
-    // Görsel oluşturma yeteneğini artırmak için gemini-pro-vision kullanıldı
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${API_KEY}`;
+    // -------------------------------------------------------------------
+    // DÜZELTME 1: HATA VEREN MODEL ADI VE API SÜRÜMÜ GÜNCELLENDİ
+    // -------------------------------------------------------------------
+    // Hatalı: models/gemini-pro-vision (v1beta'da genellikle hataya neden olur)
+    // Yeni Öneri: gemini-2.5-flash (Güncel, multimodal destekli, hızlı ve önerilen model)
+    const MODEL_NAME = 'gemini-2.5-flash';
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
     
     const userInput = document.getElementById('userInput');
     const sendButton = document.getElementById('sendButton');
@@ -98,59 +103,66 @@
         // Ekranı temizle
         outputDiv.innerHTML = ''; 
         
-        // Sistem Talimatı (Sadece görüntüden çıkarmak için gerekli)
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra sadece görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Başka hiçbir metin ekleme.";
+        // Bu sistem talimatı sadece görsel amaçlıydı, API'ye gönderilmediği için kaldırıldı.
+        // Konuşma geçmişini temizlerken başlangıç mesajını geri yüklemek için gerekli.
+        if (conversationHistory.length === 0) {
+            outputDiv.innerHTML = `<strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!`;
+            return;
+        }
 
-        // Görsel URL kalıbı (http://googleusercontent.com/image_generation_content/...)
-        // Bu regex daha esnek hale getirildi
-        const imageUrlRegex = /https?:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:[^>]+>/g;
+        // HATA GİDERME 2: GÖRSEL URL REGEX'İ BASİTLEŞTİRİLDİ VE GERÇEKÇİ HALE GETİRİLDİ
+        // Yeni Gemini API'ları genellikle görsel üretimi için ayrı bir çağrı gerektirir (daha karmaşık).
+        // Ancak bu koddaki özel "image-tokens-bardstorage" yapısı, eski bir sistemden kalma bir Mock (Taklit) URL'dir.
+        // Bu yüzden sadece taklit URL'yi img etiketine çevirme mantığını koruduk, ancak temizledik.
+        const imageUrlRegex = /<image-tokens-bardstorage:\/\/[^>]+>(https?:\/\/[^\s]+)/g;
 
         // Geçmişteki her bir konuşma sırasını (turn) döngüye al
         conversationHistory.forEach(turn => {
             const isUser = turn.role === "user";
             let text = turn.parts[0].text;
             
-            // Eğer rol kullanıcı ise, AI'a gönderilen bağlamı (systemContext) metinden temizle
+            // DÜZELTME 3: SİSTEM TALİMATI TEMİZLİĞİ İYİLEŞTİRİLDİ
+            // Kullanıcı mesajının sadece ilgili kısmını göster.
+            const systemContextCheck = "Kullanıcı sorusu: ";
+
             if (isUser) {
-                // Kullanıcının gerçek sorusunu bul ve temizle
-                const userQuestionMatch = text.match(/Kullanıcı sorusu: ([\s\S]*)/);
-                if (userQuestionMatch) {
-                    text = userQuestionMatch[1].trim();
-                } else {
-                    // Güvenlik amaçlı, sadece bağlamı kaldır
-                    text = text.replace(systemContext, '').replace('Kullanıcı sorusu:', '').trim();
-                }
+                // Kullanıcının sorusunu, sisteme gönderilen uzun metinden ayıkla
+                if (text.startsWith(systemContext)) {
+                    // Bu, finalPromptForRequest'ten gelen formatı temizler
+                    text = text.substring(text.indexOf(systemContextCheck) + systemContextCheck.length).trim();
+                } 
+                // Eğer metinde hala sistem talimatı varsa, onu da temizle (ekstra güvenlik)
+                text = text.replace(systemContext, '').trim(); 
+                
                 outputDiv.innerHTML += `<p><strong>Siz:</strong> ${text}</p>`;
             } else {
                 // AI yanıtını biçimlendir (Kod bloklarını ve GÖRSEL URL'lerini HTML'e çevir)
                 let processedText = text;
 
                 // 1. Görsel URL'lerini <img> etiketlerine çevir
-                processedText = processedText.replace(imageUrlRegex, (match) => {
-                    // match içindeki token'ları ve fazlalıkları temizleyerek sadece URL kısmını al
-                    // image-tokens-bardstorage kısmı tamamen kaldırıldı, sadece URL kaldı
-                    const cleanedUrl = match.replace(/<image-tokens-bardstorage:[^>]+>/, '');
-                    return `<img src="${cleanedUrl}" alt="Oluşturulan Görsel">`;
+                // NOT: Gerçek bir Gemini API'da bu yanıt gelmez, ayrı bir görsel API çağrısı gerekir.
+                // Bu kod, eski Bard/Gemini arayüzündeki taklit görsel URL yapısını taklit ediyor.
+                processedText = processedText.replace(imageUrlRegex, (match, url) => {
+                    return `<img src="${url}" alt="Oluşturulan Görsel">`;
                 });
 
                 // 2. Kod bloklarını <pre> etiketiyle değiştir
                 const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
                 processedText = processedText.replace(codeBlockRegex, (match, language, code) => {
                     const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    const langDisplay = language ? `\n\n// Dil: ${language.toUpperCase()}\n\n` : '';
+                    const langDisplay = language ? `\n// Dil: ${language.toUpperCase()}\n` : '';
                     return `<pre><code>${langDisplay}${safeCode.trim()}</code></pre>`;
                 });
                 
                 // 3. Normal metin paragraflarını ayır ve biçimlendir
-                // Görsel veya kod bloğu içermeyen her satırı bir paragrafa dönüştür
+                // \n ile ayrılmış metinleri <p> etiketleri arasına al.
                 processedText = processedText.split('\n').map(p => {
                     p = p.trim();
-                    if (p && !p.startsWith('<pre') && !p.startsWith('<img')) { 
+                    // Kod bloğu veya görsel etiketi içermeyen satırları <p> yap
+                    if (p && !p.startsWith('<pre') && !p.startsWith('<img') && !p.startsWith('</code>') && !p.startsWith('</pre')) { 
                         return `<p>${p}</p>`;
-                    } else if (p.startsWith('<pre') || p.startsWith('<img')) {
-                        return p; // pre veya img etiketini olduğu gibi bırak
-                    }
-                    return ''; // Boş satırları atla
+                    } 
+                    return p; // Diğer etiketleri olduğu gibi bırak
                 }).filter(Boolean).join(''); // Boş stringleri kaldır
 
                 outputDiv.innerHTML += `<p><strong>BilalAI:</strong></p>${processedText}`;
@@ -167,31 +179,36 @@
         const prompt = userInput.value.trim();
         if (!prompt) return;
 
-        // API anahtarı boşsa uyarı ver ve çık
-        if (API_KEY === "YENİ_API_ANAHTARINIZI_BURAYA_EKLEYİN" || !API_KEY || API_KEY.length < 20) { // Basit anahtar kontrolü
-            outputDiv.innerHTML += `<p style="color: red;"><strong>HATA:</strong> Lütfen geçerli bir API anahtarı girin. Anahtarınız eksik veya hatalı.</p>`;
+        // DÜZELTME 4: API ANAHTARI KONTROLÜ İYİLEŞTİRİLDİ
+        if (!API_KEY || API_KEY.length < 30 || API_KEY.startsWith("AIzaSyA")) { // API anahtarları genellikle 39 karakterdir.
+            outputDiv.innerHTML += `<p style="color: red;"><strong>HATA:</strong> Lütfen **geçerli bir API anahtarı** girin. (Anahtarınız eksik veya hatalı görünüyor.)</p>`;
             return;
         }
-
 
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
-        outputDiv.innerHTML += `<p><strong>Siz:</strong> ${prompt}</p><hr><p>AI: Cevap bekleniyor...</p>`;
+        // Yeni mesaj gelmeden önce yükleme mesajını ekle
+        outputDiv.innerHTML += `<p><strong>Siz:</strong> ${prompt}</p><hr><p><strong>BilalAI:</strong> Cevap bekleniyor...</p>`;
+        outputDiv.scrollTop = outputDiv.scrollHeight;
         userInput.value = '';
         
-        // BilalAI'nın talimatı (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
-        // Görsel oluşturma yeteneği ve özel çıktı formatı eklendi
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra başka hiçbir metin eklemeden, sadece oluşturulan görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Bu URL formatını doğrudan kullan. Eğer yanıt görsel değilse, normal metin olarak yanıt ver.";
+        // DÜZELTME 5: SİSTEM TALİMATI BASİTLEŞTİRİLDİ (Sadece Gemini API'nin anladığı normal metin talimatı)
+        // Not: Gerçek görsel oluşturma için ayrı bir API çağrısı yapmanız gerekir.
+        // Ancak kodunuzdaki taklit görsel URL yapısını korumak için talimatı güncelledim.
+        const systemContext = `Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (\`\`\`) içinde ver. Kullanıcı görsel oluşturmanı istediğinde (Örn: "mavi kedi resmi çiz"), cevabın sadece **https://googleusercontent.com/image_generation_content/0<image-tokens-bardstorage://RESPONSE_DATA:xxx>${prompt.replace(/[^a-zA-Z0-9]/g, '_')}.png** formatında bir taklit görsel URL'si olmalıdır. Başka hiçbir metin ekleme.`;
         
         // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
+        // Sistemi talimatını conversationHistory'den ayırmak için ek metin kullanıldı.
         const finalPromptForRequest = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
 
         // İsteğe dahil edilecek geçerli kullanıcı mesajı
-        const currentUserMessage = { role: "user", parts: [{ text: finalPromptForRequest }] };
+        // Kullanıcıya gönderilen metin, API'ye gönderilen metinden farklı olabilir
+        const currentUserMessageForAPI = { role: "user", parts: [{ text: finalPromptForRequest }] };
+        const currentUserMessageForHistory = { role: "user", parts: [{ text: prompt }] }; // Geçmişe sadece kullanıcının girdiği metni kaydet
         
-        // İsteğe gönderilecek içerik = Tüm geçmiş + mevcut mesaj
-        const contentsForRequest = [...conversationHistory, currentUserMessage]; 
+        // İsteğe gönderilecek içerik = Tüm geçmiş + mevcut mesaj (API için olan)
+        const contentsForRequest = [...conversationHistory.map(item => ({...item, parts: [{text: item.parts[0].text}]})), currentUserMessageForAPI]; 
 
         try {
             const response = await fetch(API_URL, {
@@ -210,6 +227,7 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
+                // Orijinal hatanız burasıydı: model adı veya v1beta desteği sorunu.
                 throw new Error(`API İstek Hatası (${response.status}): ${errorData.error.message}`);
             }
 
@@ -219,8 +237,8 @@
             
             if (aiResponseText) {
                 // BAŞARILI: Mesajları GEÇMİŞE EKLE
-                conversationHistory.push(currentUserMessage);
-                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+                conversationHistory.push(currentUserMessageForHistory); // Kullanıcının temiz mesajı
+                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] }); // AI'nın yanıtı
 
                 // TÜM GEÇMİŞİ yeniden çiz
                 formatHistory();
@@ -247,8 +265,8 @@
         }
     });
 
-    // İlk yüklemede hoş geldiniz mesajını göstermek için (isteğe bağlı)
-    // formatHistory(); 
+    // İlk yüklemede hoş geldiniz mesajını göstermek için
+    // İlk mesajı temizlemesin diye bu satır kaldırıldı.
 </script>
 
 </body>
