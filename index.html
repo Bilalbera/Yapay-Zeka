@@ -46,7 +46,7 @@
             border: 1px solid #ddd;
         }
 
-        /* Mesaj Balonları Stilleri (YENİ) */
+        /* Mesaj Balonları Stilleri */
         .message-turn {
             margin-bottom: 20px;
             padding: 10px 15px;
@@ -112,7 +112,7 @@
             border-radius: 3px;
         }
 
-        /* Liste Stili (YENİ) */
+        /* Liste Stili */
         #output ul {
             list-style: disc inside;
             padding-left: 20px;
@@ -178,9 +178,79 @@
             margin: auto 0 auto 10px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- MODAL STİLLERİ (YENİ EKLENEN) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Hafif karartma */
+            display: none; /* Varsayılan olarak gizli tutulacak, JS ile açılacak */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Her şeyin üstünde görünmesini sağla */
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content h3 {
+            color: #007bff;
+            margin-top: 0;
+            font-size: 1.5em;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .modal-content p {
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .modal-content small {
+            display: block;
+            margin-top: 15px;
+            color: #888;
+            font-size: 0.85em;
+        }
+        #modal-ok-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        #modal-ok-button:hover {
+            background-color: #0056b3;
+        }
+        /* Pop-up animasyonu */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
+
+<div id="welcomeModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>BilalAI Deneme Aşamasındadır</h3>
+        <p>Bulduğunuz **hataları** ve **önerilerinizi** BeyazAtom Minecraft Sunucusunda **bilalbera** oyuncusuna bildirin.</p>
+        <button id="modal-ok-button">Tamam</button>
+        <small>Sürüm 0.1</small>
+    </div>
+</div>
 
 <div class="chat-container">
     <h2> BilalAI - Türk Yapım Yapay Zeka! 🇹🇷</h2>
@@ -197,7 +267,7 @@
     // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!! 
     // *******************************************************************
     // LÜTFEN BU YER TUTUCU ANAHTARI KENDİ GERÇEK ANAHTARINIZLA DEĞİŞTİRİN
-    const API_KEY = "AIzaSyChiJsYckDX74Drl0cZTFr3-8T7bfLH0Us"; 
+    const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; 
     
     // -------------------------------------------------------------------
     // Model ve API URL'si
@@ -214,6 +284,10 @@
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
 
+    // Yeni Modal Elementleri
+    const welcomeModal = document.getElementById('welcomeModal');
+    const modalOkButton = document.getElementById('modal-ok-button');
+
     // KONUŞMA GEÇMİŞİ (HAFIZA) DİZİSİ - Sadece temiz mesajları tutar
     const conversationHistory = []; 
 
@@ -224,6 +298,14 @@
                                 <p><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!</p>
                             </div>`;
     }
+
+    // Modal Kapatma İşlevi
+    function closeModal() {
+        welcomeModal.style.display = 'none';
+    }
+
+    // Modal'ı Kapatma Olayı
+    modalOkButton.addEventListener('click', closeModal);
 
     // Konuşma geçmişini HTML olarak biçimlendirip ekrana yazan işlev.
     function formatHistory() {
@@ -359,8 +441,8 @@
         const loadingHtml = `<div class="message-turn user-message">
                                 <strong>Siz</strong>
                                 ${cleanUserMessage}
-                             </div>
-                             <div class="message-turn ai-message" id="temp-loader-msg" style="opacity: 0.7;">
+                              </div>
+                              <div class="message-turn ai-message" id="temp-loader-msg" style="opacity: 0.7;">
                                 <strong>BilalAI</strong>
                                 <p>Cevap bekleniyor...</p>
                             </div>`;
@@ -444,8 +526,11 @@
         }
     });
 
-    // Sayfa yüklendiğinde ilk mesajı göster
-    window.onload = displayInitialMessage;
+    // Sayfa yüklendiğinde ilk mesajı göster ve modal'ı göster
+    window.onload = function() {
+        displayInitialMessage();
+        welcomeModal.style.display = 'flex'; // Modal'ı göster
+    };
 </script>
 
 </body>
