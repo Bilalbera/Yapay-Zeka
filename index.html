@@ -12,6 +12,20 @@
         /* Çıktı Alanı Stili */
         #output { border: 1px solid #ddd; padding: 15px; min-height: 200px; margin-bottom: 20px; border-radius: 8px; background-color: #f7f9fb; overflow-y: auto; max-height: 60vh; }
         
+        /* Yazılar arası boşlukları iyileştirme */
+        #output p { 
+            margin-bottom: 10px; /* Paragraflar arasına boşluk */
+            line-height: 1.6; /* Satır yüksekliği artırma */
+        }
+        #output strong {
+            color: #007bff; /* Konuşmacı adlarını belirginleştir */
+        }
+        #output hr {
+            border: none;
+            border-top: 1px dashed #e0e0e0; /* Kesikli çizgi ile ayrım */
+            margin: 20px 0; /* Çizgi üst ve altına boşluk */
+        }
+
         /* Kod Bloğu Stili - Belirginlik ve Kopyalanabilirlik */
         pre { 
             background-color: #272822; 
@@ -22,6 +36,7 @@
             font-family: 'Consolas', 'Courier New', monospace; 
             font-size: 0.9em; 
             position: relative; 
+            margin-bottom: 15px; /* Kod bloğu altına boşluk */
         }
         code { background-color: transparent; color: inherit; padding: 0; }
 
@@ -30,8 +45,10 @@
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            margin-top: 10px;
+            margin-top: 15px; /* Görsel üstüne boşluk */
+            margin-bottom: 15px; /* Görsel altına boşluk */
             display: block; /* Metinle çakışmaması için */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Görselde hafif gölge */
         }
 
         /* Kullanıcı Giriş Alanı */
@@ -49,7 +66,7 @@
 <body>
 
 <div class="chat-container">
-    <h2>🎨 BilalAI - Sohbet, Kod & Görsel Asistanı</h2>
+    <h2> BilalAI - Türk Yapımı Yapay Zeka!</h2>
     <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)...">
@@ -65,6 +82,9 @@
     const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; 
     
     // API endpoint ve model adı
+    // Genellikle 'gemini-pro-vision' gibi modeller görsel yeteneklere daha uygundur,
+    // ancak mevcut 'gemini-2.5-flash' da bazen basit görsel yanıtlar verebilir.
+    // En iyi görsel sonuçlar için modelinizi kontrol edin veya gerekirse değiştirin.
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
     
     const userInput = document.getElementById('userInput');
@@ -81,10 +101,11 @@
         outputDiv.innerHTML = ''; 
         
         // Sistem Talimatı (Sadece görüntüden çıkarmak için gerekli)
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra sadece görselin URL'sini <img src='GÖRSEL_URL'> şeklinde döndür. Başka hiçbir metin ekleme.";
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra sadece görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Başka hiçbir metin ekleme.";
 
         // Görsel URL kalıbı (http://googleusercontent.com/image_generation_content/...)
-        const imageUrlRegex = /http:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:\/\/[^>]+>/g;
+        // Bu regex daha esnek hale getirildi
+        const imageUrlRegex = /https?:\/\/googleusercontent\.com\/image_generation_content\/0<image-tokens-bardstorage:[^>]+>/g;
 
         // Geçmişteki her bir konuşma sırasını (turn) döngüye al
         conversationHistory.forEach(turn => {
@@ -109,7 +130,8 @@
                 // 1. Görsel URL'lerini <img> etiketlerine çevir
                 processedText = processedText.replace(imageUrlRegex, (match) => {
                     // match içindeki token'ları ve fazlalıkları temizleyerek sadece URL kısmını al
-                    const cleanedUrl = match.replace(/<image-tokens-bardstorage:\/\/[^>]+>/, '');
+                    // image-tokens-bardstorage kısmı tamamen kaldırıldı, sadece URL kaldı
+                    const cleanedUrl = match.replace(/<image-tokens-bardstorage:[^>]+>/, '');
                     return `<img src="${cleanedUrl}" alt="Oluşturulan Görsel">`;
                 });
 
@@ -122,13 +144,17 @@
                 });
                 
                 // 3. Normal metin paragraflarını ayır ve biçimlendir
-                processedText = processedText.split('\n\n').map(p => {
-                    if (p.trim() && !p.startsWith('<pre>') && !p.startsWith('<img')) { // img etiketlerini de atla
-                        return `<p>${p.trim()}</p>`;
+                // Görsel veya kod bloğu içermeyen her satırı bir paragrafa dönüştür
+                processedText = processedText.split('\n').map(p => {
+                    p = p.trim();
+                    if (p && !p.startsWith('<pre') && !p.startsWith('<img')) { 
+                        return `<p>${p}</p>`;
+                    } else if (p.startsWith('<pre') || p.startsWith('<img')) {
+                        return p; // pre veya img etiketini olduğu gibi bırak
                     }
-                    return p;
-                }).join('');
-                
+                    return ''; // Boş satırları atla
+                }).filter(Boolean).join(''); // Boş stringleri kaldır
+
                 outputDiv.innerHTML += `<p><strong>BilalAI:</strong></p>${processedText}`;
             }
             outputDiv.innerHTML += '<hr>';
@@ -158,7 +184,7 @@
         
         // BilalAI'nın talimatı (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
         // Görsel oluşturma yeteneği ve özel çıktı formatı eklendi
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra başka hiçbir metin eklemeden, sadece oluşturulan görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Bu URL formatını doğrudan kullan.";
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir. Görsel oluşturduktan sonra başka hiçbir metin eklemeden, sadece oluşturulan görselin URL'sini `<image-tokens-bardstorage://RESPONSE_DATA:...>` şeklinde döndür. Bu URL formatını doğrudan kullan. Eğer yanıt görsel değilse, normal metin olarak yanıt ver.";
         
         // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
         const finalPromptForRequest = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
@@ -223,6 +249,8 @@
         }
     });
 
+    // İlk yüklemede hoş geldiniz mesajını göstermek için (isteğe bağlı)
+    // formatHistory(); 
 </script>
 
 </body>
