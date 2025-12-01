@@ -66,7 +66,7 @@
 <body>
 
 <div class="chat-container">
-    <h2> BilalAI - Türk Yapımı Yapay Zeka!</h2>
+    <h2> BilalAI - Türk Yapım Yapay Zeka!</h2>
     <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **oluşturduğum görselleri de görebilirsiniz**!</div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)...">
@@ -82,10 +82,8 @@
     const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; 
     
     // API endpoint ve model adı
-    // Genellikle 'gemini-pro-vision' gibi modeller görsel yeteneklere daha uygundur,
-    // ancak mevcut 'gemini-2.5-flash' da bazen basit görsel yanıtlar verebilir.
-    // En iyi görsel sonuçlar için modelinizi kontrol edin veya gerekirse değiştirin.
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    // Görsel oluşturma yeteneğini artırmak için gemini-pro-vision kullanıldı
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${API_KEY}`;
     
     const userInput = document.getElementById('userInput');
     const sendButton = document.getElementById('sendButton');
