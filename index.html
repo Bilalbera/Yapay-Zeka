@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI: Hafızalı Sohbet & Kod Asistanı</title>
+    <title>BilalAI: Sohbet, Kod & Görsel Asistanı</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #e9eef2; margin: 0; }
         .chat-container { width: 95%; max-width: 800px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -40,10 +40,10 @@
 <body>
 
 <div class="chat-container">
-    <h2>🧠 BilalAI - Hafızalı Asistan</h2>
-    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Önceki konuşmalarımızı hatırlayarak size yardımcı olabilirim.</div>
+    <h2>🎨 BilalAI - Sohbet, Kod & Görsel Asistanı</h2>
+    <div id="output"><strong>Hoş geldiniz!</strong> Ben BilalAI. Artık sohbet edebilir, kod yazabilir ve **görsel oluşturma isteklerinizi alabilirim**!</div>
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: Önceki kodda şunu değiştir)...">
+        <input type="text" id="userInput" placeholder="Bir şey sorun (Örn: JavaScript'te döngü veya mavi bir kedinin resmini çiz)...">
         <button id="sendButton">Gönder</button>
         <div id="loader" class="loader"></div>
     </div>
@@ -51,9 +51,9 @@
 
 <script>
     // *******************************************************************
-    // !!! API Anahtarınız buraya yerleştirildi !!! 
+    // !!! YENİ API Anahtarınızı BURAYA yerleştirin !!! 
     // *******************************************************************
-    const API_KEY = "AIzaSyAgN5neJrLTJHaZXxAS3eeNfe6HSBLDYmo"; 
+    const API_KEY = "YENİ_API_ANAHTARINIZI_BURAYA_EKLEYİN"; 
     
     // API endpoint ve model adı
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
@@ -64,7 +64,6 @@
     const loader = document.getElementById('loader');
 
     // KONUŞMA GEÇMİŞİ (HAFIZA) DİZİSİ
-    // Bu dizi, her başarılı kullanıcı-AI mesaj çiftini saklar.
     const conversationHistory = []; 
 
     // Konuşma geçmişini HTML olarak biçimlendirip ekrana yazan işlev.
@@ -73,7 +72,7 @@
         outputDiv.innerHTML = ''; 
         
         // Sistem Talimatı (Sadece görüntüden çıkarmak için gerekli)
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir.";
 
         // Geçmişteki her bir konuşma sırasını (turn) döngüye al
         conversationHistory.forEach(turn => {
@@ -122,6 +121,13 @@
         const prompt = userInput.value.trim();
         if (!prompt) return;
 
+        // API anahtarı boşsa uyarı ver ve çık
+        if (API_KEY === "YENİ_API_ANAHTARINIZI_BURAYA_EKLEYİN" || !API_KEY || API_KEY.length < 20) { // Basit anahtar kontrolü
+            outputDiv.innerHTML += `<p style="color: red;"><strong>HATA:</strong> Lütfen geçerli bir API anahtarı girin. Anahtarınız eksik veya hatalı.</p>`;
+            return;
+        }
+
+
         // Yükleme durumu ayarları
         sendButton.disabled = true;
         loader.style.display = 'block';
@@ -129,7 +135,8 @@
         userInput.value = '';
         
         // BilalAI'nın talimatı (API'nin kabul ettiği tek geçerli yöntem: Prompt'a ekleme)
-        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster.";
+        // Görsel oluşturma yeteneği eklendi
+        const systemContext = "Sen BilalAI adlı, hem kodlama hem de genel sohbet konularında uzman, yardımsever bir yapay zekasın. Cevapların Türkçe, bilgilendirici ve dostça olmalıdır. Kullanıcı kod istediğinde cevabını kod blokları (```) içinde vermeye özen göster. Ayrıca, kullanıcı görsel oluşturmanı istediğinde, bu isteği doğrudan yapay zeka modeline (yani sana yanıt veren ana modelime) ilet ve bir görselin oluşturulması için yönlendir.";
         
         // API'ye gönderilecek final prompt (Talimat + Kullanıcının sorusu)
         const finalPromptForRequest = `${systemContext}\n\nKullanıcı sorusu: ${prompt}`;
@@ -198,3 +205,4 @@
 
 </body>
 </html>
+````http://googleusercontent.com/image_generation_content/0
