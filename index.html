@@ -3,23 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sandbox Projesi - Roblox Benzeri</title>
-    <link rel="stylesheet" href="style.css">
+    <title>2D Sandbox İnşa Simülasyonu (Tek Dosya)</title>
+    
+    <style>
+        /* CSS Başlangıcı */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #333;
+            padding-bottom: 50px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        #toolbar {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #toolbar button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        #toolbar button:hover {
+            background-color: #e0e0e0;
+        }
+
+        #toolbar button.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        :root {
+            --grid-size: 20; /* 20x20 luk bir alan oluşturacağız */
+            --cell-size: 25px; 
+        }
+
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), var(--cell-size));
+            grid-template-rows: repeat(var(--grid-size), var(--cell-size));
+            width: calc(var(--grid-size) * var(--cell-size));
+            height: calc(var(--grid-size) * var(--cell-size));
+            border: 5px solid #2c3e50;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .grid-cell {
+            border: 1px solid #ddd;
+            background-color: #f0f0f0; /* Boş hücre rengi */
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        
+        /* Blok Türleri */
+        .block-1 {
+            background-color: #a9a9a9; /* Taş rengi */
+        }
+
+        .block-2 {
+            background-color: #8b4513; /* Ahşap rengi */
+        }
+        /* CSS Bitişi */
+    </style>
 </head>
 <body>
-    <header>
-        <h1>🎮 Sandbox İnşa Platformu</h1>
-    </header>
+    <h1>🧱 2D İnşa Dünyası</h1>
+    
+    <div id="toolbar">
+        <button id="btn-block-type-1" class="active" data-type="1">Taş Blok</button>
+        <button id="btn-block-type-2" data-type="2">Ahşap Blok</button>
+        <button id="btn-clear">Temizle</button>
+        <button id="btn-save">Kaydet</button>
+        <button id="btn-load">Yükle</button>
+        <span id="current-mode">Mod: Yerleştirme (Shift: Sil)</span>
+    </div>
+    
+    <div id="grid-container">
+        </div>
 
-    <main id="game-container">
-        <p>Oyun motoru yükleniyor... Lütfen bekleyiniz.</p>
-        
-        </main>
+    <script>
+        /* JavaScript Başlangıcı */
+        const GRID_SIZE = 20;
+        const gridContainer = document.getElementById('grid-container');
+        let currentBlockType = 1; // Başlangıç bloğu: Taş
 
-    <footer>
-        <p>&copy; 2025 İnşa Dünyası Projesi | GitHub ile yayımlandı</p>
-    </footer>
+        // 1. Izgarayı Oluştur
+        function createGrid() {
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell');
+                cell.dataset.index = i; // Her hücreye bir indeks atıyoruz
+                cell.dataset.type = 0;   // 0 = Boş
+                
+                // Tıklama olayını ekle
+                cell.addEventListener('click', placeBlock);
+                
+                gridContainer.appendChild(cell);
+            }
+        }
 
-    <script src="script.js"></script>
+        // 2. Blok Yerleştirme/Kaldırma Mantığı
+        function placeBlock(event) {
+            const cell = event.target;
+            
+            // Eğer shift basılıysa veya mevcut blok tipi tıklanan blok tipiyle aynıysa (iki kere tıklama) -> Kaldır (Sil)
+            if (event.shiftKey || cell.dataset.type == currentBlockType) {
+                cell.classList.remove(`block-${cell.dataset.type}`);
+                cell.dataset.type = 0; // Tipi sıfırla
+            } else {
+                // Blok yerleştirme (önce eski tipi temizle)
+                cell.classList.remove(`block-${cell.dataset.type}`);
+                cell.classList.add(`block-${currentBlockType}`);
+                cell.dataset.type = currentBlockType; // Yeni tipi ata
+            }
+        }
+
+        // 3. Toolbar Olaylarını Bağlama
+        document.getElementById('toolbar').addEventListener('click', (e) => {
+            // Blok tipi butonlarına tıklandıysa
+            if (e.target.dataset.type) {
+                currentBlockType = parseInt(e.target.dataset.type);
+                // Aktif butonu değiştir
+                document.querySelector('#toolbar .active')?.classList.remove('active');
+                e.target.classList.add('active');
+            }
+            
+            // 4. Kaydetme ve Yükleme Mantığı
+            if (e.target.id === 'btn-save') {
+                saveMap();
+            } else if (e.target.id === 'btn-load') {
+                loadMap();
+            } else if (e.target.id === 'btn-clear') {
+                clearMap();
+            }
+        });
+
+        function saveMap() {
+            const cells = document.querySelectorAll('.grid-cell');
+            // Tüm hücrelerin tip verilerini (0, 1, 2...) içeren bir dizi oluştur
+            const mapData = Array.from(cells).map(cell => parseInt(cell.dataset.type));
+            
+            // Veriyi tarayıcının yerel depolama alanına kaydet (Local Storage)
+            localStorage.setItem('sandboxMap', JSON.stringify(mapData));
+            alert('Harita kaydedildi! Tekrar yüklemek için Yükle butonuna basın.');
+        }
+
+        function loadMap() {
+            const savedData = localStorage.getItem('sandboxMap');
+            if (!savedData) {
+                alert('Kaydedilmiş harita bulunamadı.');
+                return;
+            }
+            
+            const mapData = JSON.parse(savedData);
+            const cells = document.querySelectorAll('.grid-cell');
+            
+            cells.forEach((cell, index) => {
+                const type = mapData[index];
+                
+                // Eski sınıfları temizle
+                cell.classList.remove(`block-1`, `block-2`); 
+                
+                cell.dataset.type = type;
+                if (type != 0) {
+                    cell.classList.add(`block-${type}`); // Yeni sınıfı ekle
+                }
+            });
+            alert('Harita yüklendi!');
+        }
+
+        function clearMap() {
+            if (confirm("Haritayı temizlemek istediğinizden emin misiniz?")) {
+                const cells = document.querySelectorAll('.grid-cell');
+                cells.forEach(cell => {
+                    // Sadece zorunlu olan 'grid-cell' sınıfını bırak
+                    cell.classList = ['grid-cell']; 
+                    cell.dataset.type = 0;
+                });
+                localStorage.removeItem('sandboxMap');
+            }
+        }
+
+        // Başlangıçta ızgarayı çiz
+        createGrid();
+        /* JavaScript Bitişi */
+    </script>
 </body>
 </html>
