@@ -3,203 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Sandbox İnşa Simülasyonu (Tek Dosya)</title>
+    <title>3D Sandbox Projesi - Three.js</title>
     
     <style>
-        /* CSS Başlangıcı */
-        body {
-            font-family: Arial, sans-serif;
+        body { margin: 0; overflow: hidden; } /* 3D sahne tüm ekranı kaplasın */
+        canvas { display: block; } /* Görüntü hatalarını önler */
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
             text-align: center;
-            background-color: #f4f4f4;
-            color: #333;
-            padding-bottom: 50px;
-        }
-
-        h1 {
-            color: #2c3e50;
-        }
-
-        #toolbar {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        #toolbar button {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-
-        #toolbar button:hover {
-            background-color: #e0e0e0;
-        }
-
-        #toolbar button.active {
-            background-color: #3498db;
             color: white;
-            border-color: #2980b9;
+            font-family: Arial, sans-serif;
+            z-index: 100;
+            text-shadow: 1px 1px 2px black;
         }
-
-        :root {
-            --grid-size: 20; /* 20x20 luk bir alan oluşturacağız */
-            --cell-size: 25px; 
-        }
-
-        #grid-container {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-size), var(--cell-size));
-            grid-template-rows: repeat(var(--grid-size), var(--cell-size));
-            width: calc(var(--grid-size) * var(--cell-size));
-            height: calc(var(--grid-size) * var(--cell-size));
-            border: 5px solid #2c3e50;
-            margin: 20px auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .grid-cell {
-            border: 1px solid #ddd;
-            background-color: #f0f0f0; /* Boş hücre rengi */
-            cursor: pointer;
-            transition: background-color 0.1s;
-        }
-        
-        /* Blok Türleri */
-        .block-1 {
-            background-color: #a9a9a9; /* Taş rengi */
-        }
-
-        .block-2 {
-            background-color: #8b4513; /* Ahşap rengi */
-        }
-        /* CSS Bitişi */
     </style>
 </head>
 <body>
-    <h1>🧱 2D İnşa Dünyası</h1>
-    
-    <div id="toolbar">
-        <button id="btn-block-type-1" class="active" data-type="1">Taş Blok</button>
-        <button id="btn-block-type-2" data-type="2">Ahşap Blok</button>
-        <button id="btn-clear">Temizle</button>
-        <button id="btn-save">Kaydet</button>
-        <button id="btn-load">Yükle</button>
-        <span id="current-mode">Mod: Yerleştirme (Shift: Sil)</span>
+    <div id="info">
+        Tıklama: Blok Yerleştir | Sağ Tık (veya Shift + Tık): Blok Sil | WASD: Hareket
     </div>
-    
-    <div id="grid-container">
-        </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        /* JavaScript Başlangıcı */
-        const GRID_SIZE = 20;
-        const gridContainer = document.getElementById('grid-container');
-        let currentBlockType = 1; // Başlangıç bloğu: Taş
+        // *** 3D SAHNE KURULUMU ***
+        let camera, scene, renderer;
+        let controls; // Kamera kontrolü için (örneğin OrbitControls)
+        let raycaster; // Tıklanan bloğu tespit etmek için
+        const pointer = new THREE.Vector2();
+        
+        // Blok Boyutu ve Dünya Yapısı
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+        const objects = []; // Sahnedeki tüm küpleri tutacak dizi
 
-        // 1. Izgarayı Oluştur
-        function createGrid() {
-            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('grid-cell');
-                cell.dataset.index = i; // Her hücreye bir indeks atıyoruz
-                cell.dataset.type = 0;   // 0 = Boş
-                
-                // Tıklama olayını ekle
-                cell.addEventListener('click', placeBlock);
-                
-                gridContainer.appendChild(cell);
-            }
+        init();
+        animate();
+
+        function init() {
+            // 1. Sahne ve Renderer Kurulumu
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x30688a); // Mavi gökyüzü
+            scene.fog = new THREE.Fog(0x30688a, 10, 50);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // 2. Kamera Kurulumu (FPS tarzı kontrol için)
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, 0);
+
+            // 3. Işıklandırma
+            const ambientLight = new THREE.AmbientLight(0x606060);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(1, 0.75, 0.5).normalize();
+            scene.add(directionalLight);
+
+            // 4. Zemin Izgarasını Oluşturma (Başlangıç alanı)
+            const planeGeometry = new THREE.PlaneGeometry(30, 30, 30, 30);
+            const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x555555, wireframe: true });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.rotation.x = -Math.PI / 2;
+            scene.add(plane);
+            objects.push(plane); // Raycaster'ın zeminle de etkileşime girmesi için
+
+            // 5. Raycaster Kurulumu (Tıklama Tespiti)
+            raycaster = new THREE.Raycaster();
+
+            // Olay Dinleyicileri
+            document.addEventListener('pointermove', onPointerMove);
+            document.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('resize', onWindowResize);
+            
+            // Başlangıç Bloklarını Ekle
+            addCube(0, 0.5, 0);
+            addCube(1, 0.5, 0);
         }
 
-        // 2. Blok Yerleştirme/Kaldırma Mantığı
-        function placeBlock(event) {
-            const cell = event.target;
-            
-            // Eğer shift basılıysa veya mevcut blok tipi tıklanan blok tipiyle aynıysa (iki kere tıklama) -> Kaldır (Sil)
-            if (event.shiftKey || cell.dataset.type == currentBlockType) {
-                cell.classList.remove(`block-${cell.dataset.type}`);
-                cell.dataset.type = 0; // Tipi sıfırla
-            } else {
-                // Blok yerleştirme (önce eski tipi temizle)
-                cell.classList.remove(`block-${cell.dataset.type}`);
-                cell.classList.add(`block-${currentBlockType}`);
-                cell.dataset.type = currentBlockType; // Yeni tipi ata
-            }
+        // *** OYUN MANTIK FONKSİYONLARI ***
+        
+        function addCube(x, y, z) {
+            const cube = new THREE.Mesh(geometry, material.clone());
+            cube.position.set(x, y, z);
+            scene.add(cube);
+            objects.push(cube);
         }
 
-        // 3. Toolbar Olaylarını Bağlama
-        document.getElementById('toolbar').addEventListener('click', (e) => {
-            // Blok tipi butonlarına tıklandıysa
-            if (e.target.dataset.type) {
-                currentBlockType = parseInt(e.target.dataset.type);
-                // Aktif butonu değiştir
-                document.querySelector('#toolbar .active')?.classList.remove('active');
-                e.target.classList.add('active');
-            }
-            
-            // 4. Kaydetme ve Yükleme Mantığı
-            if (e.target.id === 'btn-save') {
-                saveMap();
-            } else if (e.target.id === 'btn-load') {
-                loadMap();
-            } else if (e.target.id === 'btn-clear') {
-                clearMap();
-            }
-        });
-
-        function saveMap() {
-            const cells = document.querySelectorAll('.grid-cell');
-            // Tüm hücrelerin tip verilerini (0, 1, 2...) içeren bir dizi oluştur
-            const mapData = Array.from(cells).map(cell => parseInt(cell.dataset.type));
-            
-            // Veriyi tarayıcının yerel depolama alanına kaydet (Local Storage)
-            localStorage.setItem('sandboxMap', JSON.stringify(mapData));
-            alert('Harita kaydedildi! Tekrar yüklemek için Yükle butonuna basın.');
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function loadMap() {
-            const savedData = localStorage.getItem('sandboxMap');
-            if (!savedData) {
-                alert('Kaydedilmiş harita bulunamadı.');
-                return;
-            }
-            
-            const mapData = JSON.parse(savedData);
-            const cells = document.querySelectorAll('.grid-cell');
-            
-            cells.forEach((cell, index) => {
-                const type = mapData[index];
+        function onPointerMove(event) {
+            // Fare pozisyonunu normalize et (-1 ile +1 arasında)
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onMouseDown(event) {
+            // Sadece sol tıklama (0) ve sağ tıklama (2) için çalışır
+            if (event.button !== 0 && event.button !== 2) return;
+
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                const face = intersect.face;
                 
-                // Eski sınıfları temizle
-                cell.classList.remove(`block-1`, `block-2`); 
-                
-                cell.dataset.type = type;
-                if (type != 0) {
-                    cell.classList.add(`block-${type}`); // Yeni sınıfı ekle
+                // Sağ tıklama veya Shift tuşu basılıysa: Blok Silme
+                if (event.button === 2 || event.shiftKey) { 
+                    if (intersect.object !== scene.children[3]) { // Zemini silmeyi engelle
+                        scene.remove(intersect.object);
+                        objects.splice(objects.indexOf(intersect.object), 1);
+                    }
+                } 
+                // Sol tıklama: Blok Yerleştirme
+                else { 
+                    const position = intersect.point.clone().add(face.normal);
+                    
+                    // Pozisyonu en yakın tam sayıya yuvarla (Voxel ızgarası için)
+                    const x = Math.round(position.x);
+                    const y = Math.round(position.y - 0.5); // Yüksekliği zemine göre ayarla
+                    const z = Math.round(position.z);
+                    
+                    addCube(x, y + 0.5, z);
                 }
-            });
-            alert('Harita yüklendi!');
-        }
-
-        function clearMap() {
-            if (confirm("Haritayı temizlemek istediğinizden emin misiniz?")) {
-                const cells = document.querySelectorAll('.grid-cell');
-                cells.forEach(cell => {
-                    // Sadece zorunlu olan 'grid-cell' sınıfını bırak
-                    cell.classList = ['grid-cell']; 
-                    cell.dataset.type = 0;
-                });
-                localStorage.removeItem('sandboxMap');
             }
         }
+        
+        // ** Basit FPS Kamera Kontrolü (Geliştirilmesi Gereken Kısım) **
+        // Not: Three.js'in "PointerLockControls" kütüphanesi daha iyidir, ancak tek dosyada zor dahil edilir.
+        // Bu yüzden sadece temel bir hareket simülasyonu yapacağız.
 
-        // Başlangıçta ızgarayı çiz
-        createGrid();
-        /* JavaScript Bitişi */
+        // *** OYUN DÖNGÜSÜ ***
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
     </script>
 </body>
 </html>
