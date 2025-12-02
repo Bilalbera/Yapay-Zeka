@@ -1,231 +1,25 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BilalAİ - BeyazAtom Sunucu Asistanı</title>
-  <style>
-    body {
-      background: #0d0d0d;
-      color: #ffcc00;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #111;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.06);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 22px;
-    }
-    #chat-box {
-      height: 340px;
-      overflow-y: auto;
-      padding: 12px;
-      border: 1px solid #222;
-      border-radius: 10px;
-      background: #0f0f0f;
-      margin-bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .msg {
-      margin: 0;
-      padding: 10px 14px;
-      border-radius: 10px;
-      max-width: 80%;
-      word-break: break-word;
-    }
-    .user {
-      background: #1e90ff;
-      align-self: flex-end;
-      color: #fff;
-    }
-    .bot {
-      background: #2f2f2f;
-      align-self: flex-start;
-      color: #fff;
-    }
-    #input-area {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #222;
-      background: #0b0b0b;
-      color: #fff;
-      outline: none;
-      font-size: 15px;
-    }
-    button {
-      padding: 10px 16px;
-      background: #1e90ff;
-      color: #ffcc00;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    button:hover { background: #0f6ad4; }
-    .examples { margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap }
-    .examples button { background:#333; padding:6px 10px; font-size:13px }
-    .meta { font-size:13px; color:#bbb; text-align:center; margin-bottom:8px }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox Projesi - Roblox Benzeri</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>BilalAİ - BeyazAtom Asistanı</h1>
-    <div class="meta">Test soruları: butonlara tıklayarak BilalAİ'yi test edebilirsin.</div>
+    <header>
+        <h1>🎮 Sandbox İnşa Platformu</h1>
+    </header>
 
-    <div id="chat-box" aria-live="polite"></div>
+    <main id="game-container">
+        <p>Oyun motoru yükleniyor... Lütfen bekleyiniz.</p>
+        
+        </main>
 
-    <div id="input-area">
-      <input id="user-input" placeholder="Sorunu yaz... (Enter ile gönder)" autocomplete="off" />
-      <button id="send-btn">Gönder</button>
-    </div>
+    <footer>
+        <p>&copy; 2025 İnşa Dünyası Projesi | GitHub ile yayımlandı</p>
+    </footer>
 
-    <div class="examples">
-      <button data-q="Lobiye nasıl gidebilirim?">Lobiye nasıl gidebilirim?</button>
-      <button data-q="Sunucu ip ne?">Sunucu IP</button>
-      <button data-q="Kaç GB ram var?">RAM</button>
-      <button data-q="Discord var mı?">Discord</button>
-      <button data-q="Sunucu sürümünü söyler misin?">Sürüm</button>
-    </div>
-  </div>
-
-  <script>
-    // Basit soru-cevap sözlüğü (geliştirilebilir)
-    const qa = {
-      "tp": "Bir oyuncuya ışınlanmak için: /tp <oyuncu_adı> komutunu kullanabilirsin.",
-      "tp nasıl": "TP atmak için: /tp <oyuncu_adı> komutunu yaz.",
-      "tp nasıl atılır": "Bir oyuncuya ışınlanmak için /tp <oyuncu_adı> komutunu kullan.",
-      "şikayet": "Bir oyuncuyu şikayet etmek için: /report <oyuncu_adı> <sebep> komutunu yaz.",
-      "oyuncu şikayet": "Şikayet için /report <oyuncu_adı> <sebep> komutunu kullanabilirsin.",
-      "ip": "BeyazAtom Sunucusu IP: beyazatom.com",
-      "ip adresi": "BeyazAtom Sunucusu IP: beyazatom.com",
-      "kaç gb": "Sunucu 128 GB RAM ile çalışmaktadır.",
-      "ram": "Sunucu 128 GB RAM ile çalışmaktadır.",
-      "discord": "BeyazAtom discord sunucusu: discord.gg/beyazatom",
-      "discord sunucusu": "BeyazAtom discord sunucusu: discord.gg/beyazatom",
-      "sürüm": "Sunucu 1.19.2 - 1.21.10 sürümünde çalışmaktadır.",
-      "sunucu sürümü": "Sunucu 1.19.2 - 1.21.10 sürümünde çalışmaktadır.",
-      "owner": "Sunucu sahibi: BeyazAtom",
-      "sahip": "Sunucu sahibi: BeyazAtom",
-      "lobi": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
-      "hub": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
-      "lobiye": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
-      "nasıl lobiye giderim": "Lobiye gitmek için: /lobi veya /hub komutunu yazman yeterli!",
-
-      "sandık market": "Sandıktan market yapmak için eline satacağın itemi alıp satmak istediğin sandığa bakıp /chestshop komutunu kullan ve marketin hazır! 😊",
-      "sandiktan market": "Sandıktan market yapmak için eline satacağın itemi alıp satmak istediğin sandığa bakıp /chestshop komutunu kullan ve marketin hazır! 😊",
-      "sandık market nasıl yapılır": "Sandıktan market yapmak için eline satacağın itemi alıp satmak istediğin sandığa bakıp /chestshop komutunu kullan ve marketin hazır! 😊",
-
-      "site": "BeyazAtom sitesine gitmek için: beyazatom.com",
-      "siteye nasıl giderim": "BeyazAtom sitesine gitmek için: beyazatom.com",
-      "web site": "BeyazAtom sitesine gitmek için: beyazatom.com",
-
-      "selam": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊",
-      "merhaba": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊",
-      "selam bilalai": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊",
-      "merhaba bilalai": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊",
-      "selam bilalaİ": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊",
-      "merhaba bilalaİ": "Merhaba! Ben BilalAİ, BeyazAtom sunucusu için yardımcı olmaya hazırım! 😊"
-    };
-
-    // BilalAİ'nin cevap üretme fonksiyonu
-    function botReply(rawMsg) {
-      if (!rawMsg) return "Bir şey yazmalısın 😊";
-      const msg = rawMsg.toLowerCase().trim();
-
-      // 1) Tam anahtar eşleşmesi
-      if (qa[msg]) return qa[msg];
-
-      // 2) Anahtar kelime içermesi
-      for (const key in qa) {
-        if (msg.includes(key)) return qa[key];
-      }
-
-      // 3) Kelime bazlı en basit yakın eşleşme (tek kelime kontrolü)
-      const words = msg.split(/\s+/);
-      for (const w of words) {
-        for (const key in qa) {
-          if (w === key || key.includes(w)) return qa[key];
-        }
-      }
-
-      // 4) Hiçbir eşleşme bulunmadıysa daha açıklayıcı fallback
-      return "BilalAİ bunu tam anlayamadı. Örnek sorular: 'lobi', 'ip', 'discord', 'kaç gb ram'.";
-    }
-
-    // DOM elemanları
-    const input = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const chatBox = document.getElementById('chat-box');
-
-    // Mesaj ekleme fonksiyonu
-    function addMessage(text, sender) {
-      const msg = document.createElement('div');
-      msg.className = 'msg ' + sender;
-      msg.textContent = text;
-      chatBox.appendChild(msg);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Tek tanımlı sendMessage fonksiyonu (hata buradaydı, şimdi düzeltilmiş)
-    function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage(text, 'user');
-      // Bot cevabını asenkron simüle et (hızlı)
-      setTimeout(() => {
-        const reply = botReply(text);
-        addMessage(reply, 'bot');
-      }, 250);
-
-      input.value = '';
-      input.focus();
-    }
-
-    // Event listener'lar
-    sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-
-    // Örnek test butonları (test vakaları)
-    document.querySelectorAll('.examples button').forEach(b => {
-      b.addEventListener('click', () => {
-        input.value = b.getAttribute('data-q');
-        sendMessage();
-      });
-    });
-
-    // Başlangıç mesajı (test amaçlı)
-    addMessage('Merhaba! Ben BilalAİ — BeyazAtom sunucu asistanıyım. Nasıl yardımcı olabilirim?', 'bot');
-
-  </script>
-  <!-- Uyarı Popup -->
-  <div id="bilalAiWarning" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-    <div style="background: white; padding: 20px; width: 350px; border-radius: 12px; text-align: center; font-family: Arial;">
-      <h2 style="color: red; font-weight: bold;">UYARI</h2>
-      <p style="font-size: 14px; margin-top: 10px;">
-        BilalAİ, BeyazAtom Minecraft Sunucusu Yardımcısı hala gelişim aşamasındadır.<br>
-        Bir hata bulursanız veya öneri yazmak isterseniz <b>bilalbera</b> oyuncusuna bildiriniz.
-      </p>
-      <p style="font-size: 12px; color: gray; margin-top: 10px;">Sürüm 0.1</p>
-      <button onclick="document.getElementById('bilalAiWarning').style.display='none'" style="margin-top: 15px; padding: 8px 15px; border: none; background: #00aaff; color: #ffcc00; border-radius: 6px; cursor: pointer; font-size: 14px;">Tamam</button>
-    </div>
-  </div>
+    <script src="script.js"></script>
 </body>
 </html>
