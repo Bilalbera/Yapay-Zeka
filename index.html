@@ -3,74 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAİ - Akıllı Asistan</title>
+    <title>BilalAİ - Pro Asistan</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root { --bg: #0f0f0f; --chat-bg: #1a1a1a; --user-msg: #005c4b; --ai-msg: #262626; --accent: #00a884; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0b0e11; color: #e9edef; height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e9edef; height: 100vh; display: flex; flex-direction: column; }
         
-        header { background: #202c33; padding: 15px; text-align: center; border-bottom: 1px solid #333; color: #00a884; font-size: 1.2rem; font-weight: bold; }
+        header { background: var(--chat-bg); padding: 15px; text-align: center; border-bottom: 1px solid #333; color: var(--accent); font-size: 1.4rem; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         
-        .msg-wrap { display: flex; flex-direction: column; max-width: 85%; }
+        .msg-box { display: flex; flex-direction: column; max-width: 85%; }
         .user { align-self: flex-end; }
         .ai { align-self: flex-start; }
 
-        .label { font-size: 0.75rem; margin-bottom: 3px; font-weight: bold; opacity: 0.8; }
-        .user .label { color: #d9dbd3; text-align: right; margin-right: 10px; }
-        .ai .label { color: #00a884; margin-left: 10px; }
+        .name-tag { font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; }
+        .user .name-tag { color: #8696a0; text-align: right; margin-right: 5px; }
+        .ai .name-tag { color: var(--accent); margin-left: 5px; }
 
-        .bubble { padding: 10px 15px; border-radius: 12px; position: relative; font-size: 0.95rem; line-height: 1.5; }
-        .user .bubble { background: #005c4b; border-top-right-radius: 0; }
-        .ai .bubble { background: #202c33; border-top-left-radius: 0; }
+        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 1rem; line-height: 1.6; position: relative; word-wrap: break-word; }
+        .user .bubble { background: var(--user-msg); border-top-right-radius: 2px; }
+        .ai .bubble { background: var(--ai-msg); border-top-left-radius: 2px; border: 1px solid #333; }
 
-        /* Kod Bloğu */
-        pre { background: #111b21 !important; padding: 12px; border-radius: 8px; margin: 10px 0; overflow-x: auto; position: relative; border: 1px solid #333; }
-        code { font-family: 'Consolas', monospace; color: #4ec9b0; }
-        .copy-btn { position: absolute; right: 5px; top: 5px; background: #3b4a54; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
-
-        .ai-img { width: 100%; max-width: 350px; border-radius: 8px; margin-top: 10px; border: 1px solid #444; }
-
-        .input-container { background: #202c33; padding: 15px; display: flex; gap: 10px; align-items: center; }
-        input { flex: 1; background: #2a3942; border: none; padding: 12px; border-radius: 20px; color: white; outline: none; }
-        button { background: #00a884; border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        /* Kod Bloğu Stili */
+        pre { background: #000 !important; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto; position: relative; border: 1px solid #444; }
+        code { font-family: 'Consolas', 'Monaco', monospace; color: #dcdcaa; font-size: 0.9rem; }
         
-        .typing { font-size: 0.8rem; color: #8696a0; padding: 5px 20px; display: none; }
+        .copy-btn { position: absolute; right: 10px; top: 10px; background: #444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+        .copy-btn:hover { background: #666; }
+
+        .ai-img { width: 100%; max-width: 450px; border-radius: 12px; margin-top: 10px; border: 2px solid #333; }
+
+        .input-bar { background: var(--chat-bg); padding: 20px; display: flex; gap: 12px; border-top: 1px solid #333; }
+        input { flex: 1; background: #2a2a2a; border: 1px solid #444; padding: 14px; border-radius: 25px; color: white; outline: none; font-size: 1rem; }
+        input:focus { border-color: var(--accent); }
+        
+        button { background: var(--accent); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; transition: 0.2s; font-size: 1.2rem; }
+        button:hover { transform: scale(1.05); background: #008f6f; }
+
+        .loader { display: none; padding: 0 20px 10px; font-size: 0.85rem; color: var(--accent); animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
 <header>BilalAİ</header>
 
-<div id="chat-box">
-    <div class="msg-wrap ai">
-        <div class="label">BilalAİ</div>
-        <div class="bubble">Selam dostum! Ben BilalAİ. İstediğini sorabilirsin, kod yazdırabilirsin ya da sadece "bir kedi resmi çiz" diyebilirsin.</div>
+<div id="chat-area">
+    <div class="msg-box ai">
+        <div class="name-tag">BilalAİ</div>
+        <div class="bubble">Selam! Ben BilalAİ. Bana gerçek kodlar yazdırabilir, sorular sorabilir veya resim çizdirebilirsin. Ne yapalım?</div>
     </div>
 </div>
 
-<div id="typing" class="typing">BilalAİ düşünüyor...</div>
+<div id="loader" class="loader">BilalAİ düşünüyor ve yazıyor...</div>
 
-<div class="input-container">
-    <input type="text" id="user-in" placeholder="Mesajınızı buraya yazın...">
-    <button id="btn"><i class="fas fa-paper-plane"></i></button>
+<div class="input-bar">
+    <input type="text" id="input" placeholder="Kod yazdır, soru sor veya resim iste...">
+    <button id="send"><i class="fas fa-paper-plane"></i></button>
 </div>
 
 <script>
-    const chatBox = document.getElementById('chat-box');
-    const userIn = document.getElementById('user-in');
-    const btn = document.getElementById('btn');
-    const typing = document.getElementById('typing');
+    const chatArea = document.getElementById('chat-area');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const loader = document.getElementById('loader');
 
-    function addMsg(text, type) {
-        const wrap = document.createElement('div');
-        wrap.className = `msg-wrap ${type}`;
+    function createMsg(text, type) {
+        const box = document.createElement('div');
+        box.className = `msg-box ${type}`;
         
-        const label = document.createElement('div');
-        label.className = 'label';
-        label.innerText = type === 'user' ? 'Sen' : 'BilalAİ';
+        const tag = document.createElement('div');
+        tag.className = 'name-tag';
+        tag.innerText = type === 'user' ? 'Sen' : 'BilalAİ';
 
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
@@ -78,67 +85,85 @@
         if (type === 'ai') {
             bubble.innerHTML = marked.parse(text);
             bubble.querySelectorAll('pre').forEach(pre => {
-                const b = document.createElement('button');
-                b.className = 'copy-btn'; b.innerText = 'Kopyala';
-                b.onclick = () => { navigator.clipboard.writeText(pre.innerText.replace('Kopyala', '')); b.innerText = 'Ok!'; };
-                pre.appendChild(b);
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.innerText = 'Kopyala';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(pre.innerText.replace('Kopyala', ''));
+                    btn.innerText = 'Kopyalandı!';
+                    setTimeout(() => btn.innerText = 'Kopyala', 2000);
+                };
+                pre.appendChild(btn);
             });
         } else {
             bubble.innerText = text;
         }
 
-        wrap.appendChild(label);
-        wrap.appendChild(bubble);
-        chatBox.appendChild(wrap);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        box.appendChild(tag);
+        box.appendChild(bubble);
+        chatArea.appendChild(box);
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    async function getResponse(msg) {
-        typing.style.display = 'block';
-        let lowMsg = msg.toLowerCase();
-        let response = "";
+    async function chat(msg) {
+        loader.style.display = 'block';
+        const lowMsg = msg.toLowerCase();
 
-        // Görsel Oluşturma Mantığı
-        if (lowMsg.includes("çiz") || lowMsg.includes("resmi") || lowMsg.includes("yap") || lowMsg.includes("görsel")) {
-            let prompt = msg.replace(/(çiz|yap|resmi|görseli|oluştur|bir|tane)/gi, "").trim();
-            if(!prompt) prompt = "beautiful scenery";
-            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
-            response = `İstediğin görseli hazırladım: \n\n <img src="${imgUrl}" class="ai-img">`;
-        } 
-        // Kod Yazma Mantığı
-        else if (lowMsg.includes("kod") || lowMsg.includes("yaz") || lowMsg.includes("script")) {
-            response = "Tabii, işte istediğin kod bloğu:\n\n```javascript\n// BilalAİ tarafından oluşturuldu\nconsole.log('Merhaba Dünya!');\nalert('Kod başarıyla çalışıyor');\n```";
-        }
-        // Sohbet Mantığı
-        else if (lowMsg.includes("nasılsın")) {
-            response = "Harikayım dostum, seni sormalı? Senin için bugün neler yapabiliriz?";
-        }
-        else if (lowMsg.includes("ne yapıyorsun") || lowMsg.includes("napıyorsun")) {
-            response = "Sohbet kutusunda seninle konuşuyorum ve yeni şeyler öğreniyorum. Sen ne yapıyorsun?";
-        }
-        else if (lowMsg.includes("selam") || lowMsg.includes("merhaba")) {
-            response = "Selam! Ben BilalAİ. Seninle tanıştığıma memnun oldum.";
-        }
-        else {
-            response = "Seni anlıyorum. Bu konuda daha detaylı bilgi verebilir misin? İstersen bir kod yazabilirim ya da hayalindeki bir şeyi çizebilirim!";
+        // 1. GÖRSEL OLUŞTURMA MANTIĞI
+        if (lowMsg.includes("çiz") || lowMsg.includes("resim") || lowMsg.includes("fotoğraf") || lowMsg.includes("görsel")) {
+            const prompt = msg.replace(/(çiz|yap|resmi|görseli|fotoğrafı|oluştur|bir|tane)/gi, "").trim();
+            const finalPrompt = prompt || "cyberpunk city";
+            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(finalPrompt)}?width=1024&height=1024&nologo=true`;
+            
+            setTimeout(() => {
+                createMsg(`İstediğin görseli senin için tasarladım: \n\n <img src="${imgUrl}" class="ai-img">`, 'ai');
+                loader.style.display = 'none';
+            }, 1500);
+            return;
         }
 
-        setTimeout(() => {
-            typing.style.display = 'none';
-            addMsg(response, 'ai');
-        }, 1000);
+        // 2. GERÇEK AI CEVABI (Hugging Face - Anahtarsız)
+        try {
+            // Soruya göre mantıklı cevaplar için basit bir yönlendirme
+            const response = await fetch("https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    inputs: `<|system|>\nSen BilalAİ isimli yardımsever bir asistansın. Kod yazabilir ve sohbet edebilirsin. Cevaplarını Türkçe ver.</s>\n<|user|>\n${msg}</s>\n<|assistant|>`,
+                    parameters: { max_new_tokens: 500, temperature: 0.7 }
+                })
+            });
+
+            const data = await response.json();
+            let aiText = "";
+
+            if (data && data[0] && data[0].generated_text) {
+                aiText = data[0].generated_text.split("<|assistant|>")[1].trim();
+            } else {
+                // Yedek Yanıt Sistemi (API yoğunsa)
+                if(lowMsg.includes("nasılsın")) aiText = "Harikayım dostum! Seninle sohbet etmek çok keyifli. Sen nasılsın?";
+                else if(lowMsg.includes("kod")) aiText = "Hangi dilde kod yazmamı istersin? Örneğin: 'Python ile yılan oyunu yaz' diyebilirsin.";
+                else aiText = "Şu an seni duyabiliyorum ama model çok yoğun. Bana tekrar yazar mısın?";
+            }
+
+            createMsg(aiText, 'ai');
+        } catch (e) {
+            createMsg("Bağlantı hatası oluştu ama ben buradayım! Ne sormuştun?", 'ai');
+        } finally {
+            loader.style.display = 'none';
+        }
     }
 
-    function send() {
-        const val = userIn.value.trim();
-        if(!val) return;
-        addMsg(val, 'user');
-        userIn.value = '';
-        getResponse(val);
+    function process() {
+        const val = input.value.trim();
+        if (!val) return;
+        createMsg(val, 'user');
+        input.value = '';
+        chat(val);
     }
 
-    btn.onclick = send;
-    userIn.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+    sendBtn.onclick = process;
+    input.onkeypress = (e) => { if (e.key === 'Enter') process(); };
 </script>
 
 </body>
