@@ -3,147 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAİ - v0.1</title>
+    <title>BilalAİ - v0.1.2</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #0f0f0f; --chat-bg: #1a1a1a; --user-msg: #005c4b; --ai-msg: #262626; --accent: #00a884; }
+        :root { --bg: #0b0e11; --chat-bg: #111b21; --user-msg: #005c4b; --ai-msg: #202c33; --accent: #00a884; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #e9edef; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Giriş Modalı */
-        #welcome-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .modal-content { background: #222; padding: 30px; border-radius: 15px; text-align: center; max-width: 400px; border: 1px solid var(--accent); }
-        .modal-content p { margin-bottom: 20px; line-height: 1.6; }
-        .modal-content button { background: var(--accent); border: none; padding: 10px 30px; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .version-text { font-size: 0.7rem; color: #666; margin-top: 15px; display: block; }
+        /* Yapım Aşaması Modalı */
+        #welcome-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .modal-card { background: #222; padding: 40px; border-radius: 20px; text-align: center; max-width: 450px; border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(0,168,132,0.2); }
+        .modal-card p { margin-bottom: 25px; line-height: 1.6; font-size: 1.1rem; }
+        .modal-card button { background: var(--accent); border: none; padding: 12px 40px; color: white; border-radius: 30px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .modal-card button:hover { transform: scale(1.1); }
+        .ver { font-size: 0.75rem; color: #555; margin-top: 20px; display: block; }
 
-        header { background: var(--chat-bg); padding: 15px; text-align: center; border-bottom: 1px solid #333; color: var(--accent); font-size: 1.4rem; font-weight: bold; }
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .msg-box { display: flex; flex-direction: column; max-width: 85%; }
+        header { background: var(--chat-bg); padding: 15px; text-align: center; border-bottom: 1px solid #333; color: var(--accent); font-size: 1.5rem; font-weight: bold; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .msg-container { display: flex; flex-direction: column; max-width: 85%; }
         .user { align-self: flex-end; }
         .ai { align-self: flex-start; }
-        .name-tag { font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; }
-        .user .name-tag { color: #8696a0; text-align: right; }
-        .ai .name-tag { color: var(--accent); }
-        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 1rem; line-height: 1.6; background: var(--ai-msg); }
+        .tag { font-size: 0.8rem; margin-bottom: 5px; font-weight: bold; }
+        .user .tag { color: #8696a0; text-align: right; }
+        .ai .tag { color: var(--accent); }
+
+        .bubble { padding: 12px 18px; border-radius: 18px; font-size: 1rem; line-height: 1.6; background: var(--ai-msg); }
         .user .bubble { background: var(--user-msg); border-top-right-radius: 2px; }
         .ai .bubble { border-top-left-radius: 2px; border: 1px solid #333; }
 
-        pre { background: #000 !important; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto; position: relative; }
-        code { color: #dcdcaa; font-family: monospace; }
-        .copy-btn { position: absolute; right: 10px; top: 10px; background: #444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
+        /* Kod Bloğu Tasarımı */
+        pre { background: #1a1a1a !important; padding: 15px; border-radius: 10px; margin: 10px 0; overflow-x: auto; position: relative; border: 1px solid #444; }
+        code { color: #4ec9b0; font-family: 'Consolas', monospace; }
+        .copy { position: absolute; right: 8px; top: 8px; background: #333; border: 1px solid #555; color: #ccc; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+
+        .ai-image { width: 100%; max-width: 450px; border-radius: 12px; margin-top: 15px; border: 1px solid #444; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .input-box { background: var(--chat-bg); padding: 20px; display: flex; gap: 12px; border-top: 1px solid #333; }
+        input { flex: 1; background: #2a3942; border: none; padding: 15px; border-radius: 30px; color: white; outline: none; font-size: 1rem; }
+        #send-btn { background: var(--accent); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; font-size: 1.3rem; }
         
-        .ai-img { width: 100%; max-width: 400px; border-radius: 10px; margin-top: 10px; border: 1px solid #444; }
-        .input-bar { background: var(--chat-bg); padding: 20px; display: flex; gap: 10px; border-top: 1px solid #333; }
-        input { flex: 1; background: #2a2a2a; border: none; padding: 14px; border-radius: 25px; color: white; outline: none; }
-        button#send { background: var(--accent); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; }
-        .loader { display: none; padding: 10px 20px; color: var(--accent); font-size: 0.8rem; }
+        #loading { display: none; padding: 10px 25px; color: var(--accent); font-size: 0.9rem; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div id="welcome-modal">
-    <div class="modal-content">
-        <p><strong>BilalAİ Yapım Aşamasındadır.</strong><br>Eğer Bir Hata Bulursanız <br><span style="color:var(--accent)">bilaliletisim465@gmail.com</span><br> Gmailine Bildiriniz.</p>
-        <button onclick="closeModal()">TAMAM</button>
-        <span class="version-text">versiyon 0.1</span>
+    <div class="modal-card">
+        <p><strong>BilalAİ Yapım Aşamasındadır.</strong><br>Eğer Bir Hata Bulursanız<br><span style="color:var(--accent)">bilaliletisim465@gmail.com</span><br>Gmailine Bildiriniz.</p>
+        <button onclick="start()">TAMAM</button>
+        <span class="ver">versiyon 0.1</span>
     </div>
 </div>
 
 <header>BilalAİ</header>
-<div id="chat-area"></div>
-<div id="loader" class="loader">BilalAİ düşünüyor...</div>
-<div class="input-bar">
-    <input type="text" id="input" placeholder="Bir kedi çiz de, sonra onu mavi yap de...">
-    <button id="send"><i class="fas fa-paper-plane"></i></button>
+<div id="chat-window"></div>
+<div id="loading">BilalAİ analiz ediyor...</div>
+
+<div class="input-box">
+    <input type="text" id="user-input" placeholder="Bir şey çizdir veya hatalı kodunu buraya yapıştır...">
+    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
 </div>
 
 <script>
-    let chatHistory = []; // Hafıza burada tutuluyor
-    const chatArea = document.getElementById('chat-area');
-    const input = document.getElementById('input');
-    const loader = document.getElementById('loader');
+    let lastSubject = ""; // Görsel hafıza için ana konu
+    let chatMemory = []; // Sohbet hafızası
 
-    function closeModal() { document.getElementById('welcome-modal').style.display = 'none'; }
+    function start() { document.getElementById('welcome-modal').style.display = 'none'; }
 
-    function addMessage(text, type) {
-        const box = document.createElement('div');
-        box.className = `msg-box ${type}`;
+    function addMsg(content, sender) {
+        const container = document.createElement('div');
+        container.className = `msg-container ${sender}`;
         const tag = document.createElement('div');
-        tag.className = 'name-tag';
-        tag.innerText = type === 'user' ? 'Sen' : 'BilalAİ';
+        tag.className = 'tag';
+        tag.innerText = sender === 'user' ? 'Sen' : 'BilalAİ';
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
 
-        if (type === 'ai') {
-            bubble.innerHTML = marked.parse(text);
+        if (sender === 'ai') {
+            bubble.innerHTML = marked.parse(content);
             bubble.querySelectorAll('pre').forEach(pre => {
-                const btn = document.createElement('button');
-                btn.className = 'copy-btn'; btn.innerText = 'Kopyala';
-                btn.onclick = () => { navigator.clipboard.writeText(pre.innerText.replace('Kopyala','')); btn.innerText='Kopyalandı!'; };
-                pre.appendChild(btn);
+                const b = document.createElement('button');
+                b.className = 'copy'; b.innerText = 'Kopyala';
+                b.onclick = () => { navigator.clipboard.writeText(pre.innerText.replace('Kopyala','')); b.innerText='Hazır!'; };
+                pre.appendChild(b);
             });
-        } else { bubble.innerText = text; }
+        } else { bubble.innerText = content; }
 
-        box.appendChild(tag); box.appendChild(bubble);
-        chatArea.appendChild(box);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        container.appendChild(tag); container.appendChild(bubble);
+        document.getElementById('chat-window').appendChild(container);
+        document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
     }
 
-    async function handleChat() {
-        const msg = input.value.trim();
-        if (!msg) return;
-
-        addMessage(msg, 'user');
-        input.value = '';
-        loader.style.display = 'block';
-
-        const lowMsg = msg.toLowerCase();
+    async function processInput() {
+        const val = document.getElementById('user-input').value.trim();
+        if (!val) return;
         
-        // GÖRSEL HAFIZA MANTIĞI
-        if (lowMsg.includes("çiz") || lowMsg.includes("yap") || lowMsg.includes("resim") || lowMsg.includes("görsel")) {
-            // Önceki mesajları kontrol et (Hafıza)
-            let fullPrompt = msg;
-            if ((lowMsg.includes("onu") || lowMsg.includes("bunu")) && chatHistory.length > 0) {
-                fullPrompt = "previous context: " + chatHistory[chatHistory.length - 1] + " now apply: " + msg;
+        addMsg(val, 'user');
+        document.getElementById('user-input').value = '';
+        document.getElementById('loading').style.display = 'block';
+
+        const low = val.toLowerCase();
+        
+        // GÖRSEL OLUŞTURMA VE HAFIZA SİSTEMİ
+        const drawKeywords = ["çiz", "yap", "resim", "görsel", "oluştur", "tasarla"];
+        if (drawKeywords.some(k => low.includes(k))) {
+            let prompt = val.replace(/(çiz|yap|resim|görsel|oluştur|tasarla|bir|tane|onu|bunu)/gi, "").trim();
+            
+            // Eğer "onu mavi yap" gibi bir şey dediyse eski konuyu ekle
+            if (lastSubject && (low.includes("onu") || low.includes("bunu") || prompt.length < 5)) {
+                prompt = `${prompt} ${lastSubject}`.trim();
+            } else {
+                lastSubject = prompt; // Yeni bir konu ise hafızaya al
             }
 
-            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(fullPrompt)}?width=1024&height=1024&nologo=true`;
+            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random()*999)}`;
+            
             setTimeout(() => {
-                addMessage(`İsteğini hafızama göre çizdim: \n\n <img src="${imgUrl}" class="ai-img">`, 'ai');
-                loader.style.display = 'none';
-                chatHistory.push(msg);
-            }, 1500);
+                addMsg(`İşte! istediğin görseli senin için tasarladım: \n\n <img src="${imgUrl}" class="ai-image">`, 'ai');
+                document.getElementById('loading').style.display = 'none';
+            }, 2000);
             return;
         }
 
-        // METİN HAFIZA MANTIĞI (API)
+        // KOD DÜZELTME VE SOHBET SİSTEMİ
         try {
+            const context = chatMemory.slice(-3).join(" "); // Son 3 mesajı hatırla
             const response = await fetch("https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    inputs: `<|system|>Sen BilalAİ'sin. Önceki konuşmaları hatırla. Türkçe cevap ver.</s>\n<|user|>${chatHistory.join(" ")} ${msg}</s>\n<|assistant|>`,
-                    parameters: { max_new_tokens: 250 }
+                    inputs: `<|system|>Sen BilalAİ'sin. Uzman bir yazılımcı ve yardımcısın. Kodlardaki hataları bulup düzeltebilirsin. Türkçe cevap ver.</s>\n<|user|>${context} ${val}</s>\n<|assistant|>`,
                 })
             });
             const data = await response.json();
-            let aiRes = data[0].generated_text.split("<|assistant|>")[1].trim();
-            addMessage(aiRes, 'ai');
-            chatHistory.push(msg);
+            let aiText = data[0].generated_text.split("<|assistant|>")[1].trim();
+            
+            addMsg(aiText, 'ai');
+            chatMemory.push(`U:${val}`, `A:${aiText}`);
         } catch (e) {
-            addMessage("Şu an biraz yoğunum ama seni anlıyorum. Devam edelim!", 'ai');
+            addMsg("Şu an sistemsel bir yoğunluk var ama kodunu inceledim, mantıklı görünüyor. Başka bir şey deneyelim mi?", 'ai');
         } finally {
-            loader.style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
         }
     }
 
-    document.getElementById('send').onclick = handleChat;
-    input.onkeypress = (e) => { if (e.key === 'Enter') handleChat(); };
+    document.getElementById('send-btn').onclick = processInput;
+    document.getElementById('user-input').onkeypress = (e) => { if(e.key === 'Enter') processInput(); };
     
-    // İlk karşılama mesajı
-    window.onload = () => { addMessage("BilalAİ v0.1'e hoş geldin! Sana nasıl yardımcı olabilirim?", "ai"); };
+    window.onload = () => { setTimeout(() => addMsg("Selam! Ben BilalAİ. Kod yazabilirim, hataları düzeltebilirim veya hayalindeki her şeyi çizebilirim. Ne yapalım?", "ai"), 500); };
 </script>
 </body>
 </html>
