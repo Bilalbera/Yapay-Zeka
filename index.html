@@ -3,107 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot & Image Gen</title>
+    <title>BilalAİ - Gelişmiş Asistan</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --bg: #1e1e1e; --chat-bg: #2d2d2d; --text: #eee; --accent: #007bff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #121212; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
         
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; }
-        .message { margin-bottom: 20px; max-width: 85%; line-height: 1.5; }
-        .user-message { margin-left: auto; color: var(--accent); font-weight: bold; }
+        /* Header Bölümü */
+        header { background: #1f1f1f; padding: 15px 20px; text-align: center; border-bottom: 1px solid #333; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        header h1 { font-size: 1.5rem; color: #0084ff; letter-spacing: 1px; }
+
+        /* Sohbet Alanı */
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
         
-        /* Kod Blokları İçin Stil */
-        pre { background: #333; padding: 15px; border-radius: 8px; position: relative; overflow-x: auto; border: 1px solid #444; }
-        code { font-family: 'Consolas', monospace; color: #dcdcaa; }
+        .message-wrapper { display: flex; flex-direction: column; max-width: 80%; }
+        .message-wrapper.user { align-self: flex-end; align-items: flex-end; }
+        .message-wrapper.ai { align-self: flex-start; align-items: flex-start; }
+
+        .sender-name { font-size: 0.85rem; margin-bottom: 5px; font-weight: bold; color: #aaa; }
+        .user .sender-name { color: #0084ff; }
+        .ai .sender-name { color: #00c853; }
+
+        .bubble { padding: 12px 16px; border-radius: 15px; font-size: 1rem; line-height: 1.5; position: relative; }
+        .user .bubble { background: #0084ff; color: white; border-bottom-right-radius: 2px; }
+        .ai .bubble { background: #2d2d2d; color: #eee; border-bottom-left-radius: 2px; border: 1px solid #444; }
+
+        /* Kod Bloğu Tasarımı */
+        pre { background: #1a1a1a !important; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto; position: relative; border: 1px solid #333; }
+        code { font-family: 'Consolas', monospace; color: #569cd6; }
         
         .copy-btn {
-            position: absolute; right: 10px; top: 10px;
-            background: #555; color: white; border: none; padding: 5px 10px;
-            border-radius: 4px; cursor: pointer; font-size: 12px;
+            position: absolute; right: 8px; top: 8px;
+            background: #444; color: #fff; border: none; padding: 4px 8px;
+            border-radius: 4px; cursor: pointer; font-size: 11px; opacity: 0.7; transition: 0.3s;
         }
-        .copy-btn:hover { background: #777; }
+        .copy-btn:hover { opacity: 1; background: #666; }
 
-        .ai-image { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 2px solid #444; }
+        /* Görsel Tasarımı */
+        .ai-img { width: 100%; max-width: 400px; border-radius: 10px; margin-top: 10px; border: 1px solid #444; display: block; }
 
-        #input-area { background: var(--chat-bg); padding: 20px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 5px; border: none; outline: none; background: #444; color: white; }
-        button#send-btn { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        /* Giriş Alanı */
+        .input-area { background: #1f1f1f; padding: 20px; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input { flex: 1; background: #2d2d2d; border: 1px solid #444; padding: 12px 15px; border-radius: 25px; color: white; outline: none; transition: 0.3s; }
+        input:focus { border-color: #0084ff; }
+        button { background: #0084ff; border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        button:hover { background: #0073e6; transform: scale(1.05); }
+
+        /* Yükleniyor Animasyonu */
+        .typing { font-style: italic; font-size: 0.8rem; color: #888; margin-top: 5px; display: none; }
     </style>
 </head>
 <body>
 
-<div id="chat-container">
-    <div class="message ai-message">Merhaba! Ben ücretsiz AI asistanın. Kod yazabilirim veya "/çiz [mesaj]" yazarak görsel oluşturabilirim.</div>
+<header>
+    <h1><i class="fas fa-robot"></i> BilalAİ</h1>
+</header>
+
+<div id="chat-window">
+    <div class="message-wrapper ai">
+        <div class="sender-name">BilalAİ</div>
+        <div class="bubble">Merhaba! Ben BilalAİ. Size nasıl yardımcı olabilirim? Kod yazabilirim veya "/çiz [mesaj]" ile görsel oluşturabilirim.</div>
+    </div>
 </div>
 
-<div id="input-area">
-    <input type="text" id="user-input" placeholder="Bir şeyler yazın veya /çiz komutunu kullanın...">
-    <button id="send-btn">Gönder</button>
+<div id="typing-indicator" class="typing" style="padding: 0 20px 10px 20px;">BilalAİ yazıyor...</div>
+
+<div class="input-area">
+    <input type="text" id="user-input" placeholder="Mesajınızı yazın...">
+    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
 </div>
 
 <script>
-    const chatContainer = document.getElementById('chat-container');
+    const chatWindow = document.getElementById('chat-window');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
+    const typingIndicator = document.getElementById('typing-indicator');
 
-    function addMessage(content, isUser = false) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+    function addMessage(text, side) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${side}`;
         
-        // Markdown desteği ve kod bloklarını işleme
-        if (!isUser) {
-            msgDiv.innerHTML = marked.parse(content);
-            // Kod bloklarına kopyala butonu ekle
-            msgDiv.querySelectorAll('pre').forEach(block => {
+        const name = document.createElement('div');
+        name.className = 'sender-name';
+        name.innerText = side === 'user' ? 'Sen' : 'BilalAİ';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        if (side === 'ai') {
+            bubble.innerHTML = marked.parse(text);
+            // Kod bloklarına kopyala butonu ekleme
+            bubble.querySelectorAll('pre').forEach(pre => {
                 const btn = document.createElement('button');
-                btn.innerText = 'Kopyala';
                 btn.className = 'copy-btn';
+                btn.innerHTML = '<i class="fas fa-copy"></i>';
                 btn.onclick = () => {
-                    navigator.clipboard.writeText(block.innerText.replace('Kopyala', ''));
-                    btn.innerText = 'Başarılı!';
-                    setTimeout(() => btn.innerText = 'Kopyala', 2000);
+                    navigator.clipboard.writeText(pre.innerText);
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
                 };
-                block.appendChild(btn);
+                pre.appendChild(btn);
             });
         } else {
-            msgDiv.innerText = content;
+            bubble.innerText = text;
         }
-        
-        chatContainer.appendChild(msgDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        wrapper.appendChild(name);
+        wrapper.appendChild(bubble);
+        chatWindow.appendChild(wrapper);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    async function handleChat() {
+    async function askAI(message) {
+        typingIndicator.style.display = 'block';
+        
+        try {
+            // Görsel Komutu
+            if (message.startsWith('/çiz')) {
+                const prompt = message.replace('/çiz', '').trim();
+                const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+                setTimeout(() => {
+                    addMessage(`İsteğin üzerine bunu çizdim: <br><img src="${imgUrl}" class="ai-img">`, 'ai');
+                    typingIndicator.style.display = 'none';
+                }, 1000);
+                return;
+            }
+
+            // Chat Altyapısı (Ücretsiz Hugging Face / Mistral benzeri bir yanıt simülasyonu)
+            // Not: Gerçek bir API key olmadan en iyi bu şekilde "akıllı" taklidi yapılabilir.
+            let response = "";
+            if(message.toLowerCase().includes("kod")) {
+                response = "Tabii ki, işte istediğin kod örneği:\n\n```python\ndef merhaba():\n    print('BilalAİ kod yazıyor...')\n\nmerhaba()\n```";
+            } else if(message.toLowerCase().includes("selam")) {
+                response = "Selam! Ben BilalAİ, sana yardımcı olmak için buradayım. Bugün ne yapalım?";
+            } else {
+                response = "Anladım. Sana bu konuda nasıl destek olabilirim? Eğer teknik bir şeyse kod yazabilirim veya bir fikir istersen yardımcı olabilirim.";
+            }
+
+            setTimeout(() => {
+                addMessage(response, 'ai');
+                typingIndicator.style.display = 'none';
+            }, 800);
+
+        } catch (error) {
+            addMessage("Üzgünüm, bir hata oluştu.", "ai");
+            typingIndicator.style.display = 'none';
+        }
+    }
+
+    function handleSend() {
         const text = userInput.value.trim();
         if (!text) return;
-
-        addMessage(text, true);
+        
+        addMessage(text, 'user');
         userInput.value = '';
-
-        // Görsel Oluşturma Komutu Kontrolü
-        if (text.startsWith('/çiz')) {
-            const prompt = text.replace('/çiz', '').trim();
-            addMessage("Görseliniz oluşturuluyor, lütfen bekleyin...");
-            const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000)}`;
-            
-            const imgHtml = `İşte istediğin görsel: <br><img src="${imageUrl}" class="ai-image" alt="AI Generated">`;
-            setTimeout(() => addMessage(imgHtml), 1000);
-            return;
-        }
-
-        // Basit Sohbet ve Kod Yazma Simülasyonu (Ücretsiz API'siz Mantık)
-        // Gerçek bir LLM için buraya HuggingFace Inference API eklenebilir (Ücretsizdir)
-        // Şimdilik yapısal bir cevap veriyoruz:
-        if (text.toLowerCase().includes("kod")) {
-            addMessage("İstediğin kod aşağıdadır:\n\n```javascript\nfunction selamla() {\n  console.log('Merhaba Dünya!');\n}\nselamla();\n```");
-        } else {
-            addMessage("Şu an çevrimdışı moddayım. Kod yazmamı istersen içinde 'kod' geçen bir cümle kurabilirsin veya `/çiz kedi` yazarak resim yaptırabilirsin.");
-        }
+        askAI(text);
     }
 
-    sendBtn.onclick = handleChat;
-    userInput.onkeypress = (e) => { if (e.key === 'Enter') handleChat(); };
+    sendBtn.onclick = handleSend;
+    userInput.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
 </script>
 
 </body>
