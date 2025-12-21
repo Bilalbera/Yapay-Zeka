@@ -3,152 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Sandbox Projesi - Three.js</title>
-    
+    <title>Yapay Zeka Nesne Tanıma (API Gerekmez)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <style>
-        body { margin: 0; overflow: hidden; } /* 3D sahne tüm ekranı kaplasın */
-        canvas { display: block; } /* Görüntü hatalarını önler */
-        #info {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-family: Arial, sans-serif;
-            z-index: 100;
-            text-shadow: 1px 1px 2px black;
-        }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f2f5; }
+        .container { position: relative; margin-top: 20px; border: 5px solid #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        video { display: block; background: #000; }
+        canvas { position: absolute; top: 0; left: 0; }
+        .status { margin-top: 10px; font-weight: bold; color: #555; }
+        h1 { color: #333; }
     </style>
 </head>
 <body>
-    <div id="info">
-        Tıklama: Blok Yerleştir | Sağ Tık (veya Shift + Tık): Blok Sil | WASD: Hareket
+
+    <h1>Canlı Nesne Tanıma AI</h1>
+    <div class="status" id="status">Model yükleniyor, lütfen bekleyin...</div>
+
+    <div class="container">
+        <video id="webcam" autoplay muted width="640" height="480"></video>
+        <canvas id="canvas"></canvas>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
     <script>
-        // *** 3D SAHNE KURULUMU ***
-        let camera, scene, renderer;
-        let controls; // Kamera kontrolü için (örneğin OrbitControls)
-        let raycaster; // Tıklanan bloğu tespit etmek için
-        const pointer = new THREE.Vector2();
-        
-        // Blok Boyutu ve Dünya Yapısı
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshLambertMaterial({ color: 0xcccccc });
-        const objects = []; // Sahnedeki tüm küpleri tutacak dizi
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+        const ctx = canvas.getContext('2d');
+        let model;
 
-        init();
-        animate();
+        // 1. Kamerayı Başlat
+        async function setupWebcam() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => resolve();
+            });
+        }
 
-        function init() {
-            // 1. Sahne ve Renderer Kurulumu
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x30688a); // Mavi gökyüzü
-            scene.fog = new THREE.Fog(0x30688a, 10, 50);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // 2. Kamera Kurulumu (FPS tarzı kontrol için)
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
-            camera.position.set(0, 5, 10);
-            camera.lookAt(0, 0, 0);
-
-            // 3. Işıklandırma
-            const ambientLight = new THREE.AmbientLight(0x606060);
-            scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            directionalLight.position.set(1, 0.75, 0.5).normalize();
-            scene.add(directionalLight);
-
-            // 4. Zemin Izgarasını Oluşturma (Başlangıç alanı)
-            const planeGeometry = new THREE.PlaneGeometry(30, 30, 30, 30);
-            const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x555555, wireframe: true });
-            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.rotation.x = -Math.PI / 2;
-            scene.add(plane);
-            objects.push(plane); // Raycaster'ın zeminle de etkileşime girmesi için
-
-            // 5. Raycaster Kurulumu (Tıklama Tespiti)
-            raycaster = new THREE.Raycaster();
-
-            // Olay Dinleyicileri
-            document.addEventListener('pointermove', onPointerMove);
-            document.addEventListener('mousedown', onMouseDown);
-            window.addEventListener('resize', onWindowResize);
+        // 2. Modeli Yükle ve Nesneleri Tahmin Et
+        async function runAI() {
+            model = await cocoSsd.load();
+            status.innerText = "Yapay Zeka Hazır! Kameraya bir şeyler göster.";
             
-            // Başlangıç Bloklarını Ekle
-            addCube(0, 0.5, 0);
-            addCube(1, 0.5, 0);
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            detectFrame();
         }
 
-        // *** OYUN MANTIK FONKSİYONLARI ***
-        
-        function addCube(x, y, z) {
-            const cube = new THREE.Mesh(geometry, material.clone());
-            cube.position.set(x, y, z);
-            scene.add(cube);
-            objects.push(cube);
+        async function detectFrame() {
+            const predictions = await model.detect(video);
+            renderPredictions(predictions);
+            requestAnimationFrame(detectFrame);
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // 3. Sonuçları Ekrana Çiz
+        function renderPredictions(predictions) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            predictions.forEach(prediction => {
+                // Kutu Çizimi
+                ctx.strokeStyle = "#00FF00";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(...prediction.bbox);
+
+                // Metin Çizimi
+                ctx.fillStyle = "#00FF00";
+                ctx.font = "18px Arial";
+                ctx.fillText(
+                    `${prediction.class} (%${Math.round(prediction.score * 100)})`,
+                    prediction.bbox[0], 
+                    prediction.bbox[1] > 10 ? prediction.bbox[1] - 5 : 10
+                );
+            });
         }
 
-        function onPointerMove(event) {
-            // Fare pozisyonunu normalize et (-1 ile +1 arasında)
-            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
-        }
-
-        function onMouseDown(event) {
-            // Sadece sol tıklama (0) ve sağ tıklama (2) için çalışır
-            if (event.button !== 0 && event.button !== 2) return;
-
-            raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObjects(objects);
-
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                const face = intersect.face;
-                
-                // Sağ tıklama veya Shift tuşu basılıysa: Blok Silme
-                if (event.button === 2 || event.shiftKey) { 
-                    if (intersect.object !== scene.children[3]) { // Zemini silmeyi engelle
-                        scene.remove(intersect.object);
-                        objects.splice(objects.indexOf(intersect.object), 1);
-                    }
-                } 
-                // Sol tıklama: Blok Yerleştirme
-                else { 
-                    const position = intersect.point.clone().add(face.normal);
-                    
-                    // Pozisyonu en yakın tam sayıya yuvarla (Voxel ızgarası için)
-                    const x = Math.round(position.x);
-                    const y = Math.round(position.y - 0.5); // Yüksekliği zemine göre ayarla
-                    const z = Math.round(position.z);
-                    
-                    addCube(x, y + 0.5, z);
-                }
-            }
-        }
-        
-        // ** Basit FPS Kamera Kontrolü (Geliştirilmesi Gereken Kısım) **
-        // Not: Three.js'in "PointerLockControls" kütüphanesi daha iyidir, ancak tek dosyada zor dahil edilir.
-        // Bu yüzden sadece temel bir hareket simülasyonu yapacağız.
-
-        // *** OYUN DÖNGÜSÜ ***
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
+        setupWebcam().then(runAI);
     </script>
 </body>
 </html>
