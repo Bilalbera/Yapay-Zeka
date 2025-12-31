@@ -3,129 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Master - Pro</title>
+    <title>Özgür AI - Limitsiz</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0b0c0d; --card: #16181a; --accent: #2563eb; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --bg: #0d1117; --card: #161b22; --accent: #238636; --text: #c9d1d9; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
         
-        /* Modal */
-        #api-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid #334155; width: 90%; max-width: 420px; text-align: center; }
-        .modal-content input { width: 100%; padding: 14px; margin: 20px 0; background: #000; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; outline: none; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px 16px; border-radius: 10px; max-width: 85%; line-height: 1.5; border: 1px solid #30363d; }
+        .user { background: #1f6feb; align-self: flex-end; color: white; }
+        .ai { background: var(--card); align-self: flex-start; }
 
-        /* Sohbet Alanı */
-        #chat-window { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        .msg { padding: 14px 20px; border-radius: 18px; max-width: 85%; line-height: 1.6; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-        .user { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai { background: var(--card); align-self: flex-start; border: 1px solid #334155; border-bottom-left-radius: 4px; }
+        .code-container { position: relative; margin: 10px 0; background: #000; border-radius: 6px; border: 1px solid #30363d; }
+        pre { margin: 0 !important; padding: 15px !important; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; background: #30363d; color: #f0f6fc; border: 1px solid #8b949e; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; }
 
-        /* Kod Bloğu */
-        .code-container { position: relative; margin: 15px 0; border-radius: 12px; overflow: hidden; border: 1px solid #334155; background: #000; }
-        pre { margin: 0 !important; padding: 1.5rem !important; background: transparent !important; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #334155; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; z-index: 10; }
-        
-        .ai-img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid #334155; }
-
-        /* Alt Alan */
-        #input-area { padding: 20px; background: var(--card); display: flex; gap: 12px; border-top: 1px solid #1e293b; }
-        #userInput { flex: 1; background: #0b0c0d; border: 1px solid #334155; color: white; padding: 14px; border-radius: 12px; outline: none; }
-        button#send { background: var(--accent); color: white; border: none; width: 50px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #input-area { padding: 20px; background: var(--card); display: flex; gap: 10px; border-top: 1px solid #30363d; }
+        input { flex: 1; background: #010409; border: 1px solid #30363d; color: white; padding: 12px; border-radius: 6px; outline: none; }
+        button { background: var(--accent); color: white; border: none; padding: 0 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="api-modal">
-    <div class="modal-content">
-        <h2>🚀 AI Kurulumu</h2>
-        <p style="color: #94a3b8; font-size: 14px;">Lütfen yeni bir Gemini API Key girin.</p>
-        <input type="password" id="api-input" placeholder="AIzaSy...">
-        <button onclick="saveKey()" style="width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">Başlat</button>
-    </div>
-</div>
-
 <div id="chat-window">
-    <div class="msg ai">Hazırım! Kod sorabilir veya görsel oluşturmamı isteyebilirsiniz (Örn: "Cyberpunk bir şehir çiz").</div>
+    <div class="msg ai">Selam! Ben herhangi bir anahtar gerektirmeyen özgür yapay zekayım. Kod yazabilirim veya "kedi resmi çiz" dersen resim yapabilirim.</div>
 </div>
 
 <div id="input-area">
-    <input type="text" id="userInput" placeholder="Mesajınızı yazın..." autocomplete="off">
-    <button id="send" onclick="askAI()">🚀</button>
+    <input type="text" id="userInput" placeholder="Mesajınızı buraya yazın...">
+    <button onclick="askAI()">Gönder</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
 
 <script>
-    let API_KEY = localStorage.getItem('ai_master_key');
-    if (API_KEY) document.getElementById('api-modal').style.display = 'none';
-
-    function saveKey() {
-        const val = document.getElementById('api-input').value.trim();
-        if (val.length > 20) {
-            localStorage.setItem('ai_master_key', val);
-            API_KEY = val;
-            document.getElementById('api-modal').style.display = 'none';
-        } else alert("Geçersiz anahtar!");
-    }
-
-    document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') askAI(); });
+    document.getElementById('userInput').addEventListener('keypress', e => e.key === 'Enter' && askAI());
 
     async function askAI() {
         const input = document.getElementById('userInput');
         const text = input.value.trim();
-        if (!text || !API_KEY) return;
+        if (!text) return;
 
         addMessage(text, 'user');
         input.value = '';
 
-        // GÖRSEL OLUŞTURMA MANTIĞI
-        const triggers = ["çiz", "oluştur", "resim", "draw", "generate image"];
-        if (triggers.some(t => text.toLowerCase().includes(t))) {
-            addMessage("Görsel hazırlanıyor...", 'ai');
-            const cleanText = text.replace(/(çiz|oluştur|resim yap|yap|draw|generate|image)/gi, "").trim();
-            const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(cleanText)}?width=1024&height=1024&nologo=true&seed=${Math.random()}`;
-            setTimeout(() => addMessage(imageUrl, 'ai', true), 1000);
-            return;
-        }
+        // Görsel mi Metin mi kontrolü
+        const isImage = ["çiz", "resim", "görsel", "draw", "image"].some(t => text.toLowerCase().includes(t));
 
-        // GOOGLE API DENEME (Sırasıyla v1beta ve v1 modellerini dener)
-        const endpoints = [
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`
-        ];
-
-        let lastError = "";
-        for (let url of endpoints) {
+        if (isImage) {
+            addMessage("Görsel oluşturuluyor...", 'ai');
+            const url = `https://pollinations.ai/p/${encodeURIComponent(text)}?width=1024&height=1024&nologo=true`;
+            setTimeout(() => addMessage(url, 'ai', true), 500);
+        } else {
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-                });
-                const data = await response.json();
-                if (data.candidates && data.candidates[0].content) {
-                    addMessage(data.candidates[0].content.parts[0].text, 'ai');
-                    return; // Başarılıysa dur
-                }
-                lastError = data.error ? data.error.message : "Bilinmeyen hata";
+                // HİÇBİR ANAHTAR GEREKTİRMEYEN API
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai`);
+                const aiText = await response.text();
+                addMessage(aiText, 'ai');
             } catch (e) {
-                lastError = e.message;
+                addMessage("Üzgünüm, bir hata oluştu.", 'ai');
             }
         }
-        addMessage("Hata: " + lastError + " (Sıfırlamak için konsola localStorage.clear() yazın)", 'ai');
     }
 
-    function addMessage(content, role, isImage = false) {
-        const chatWindow = document.getElementById('chat-window');
+    function addMessage(content, role, isImg = false) {
+        const win = document.getElementById('chat-window');
         const div = document.createElement('div');
         div.className = `msg ${role}`;
 
-        if (isImage) {
-            div.innerHTML = `<img src="${content}" class="ai-img" onload="scrollToBottom()">`;
+        if (isImg) {
+            div.innerHTML = `<img src="${content}" onload="win.scrollTop = win.scrollHeight">`;
         } else if (role === 'ai') {
             let html = marked.parse(content);
             div.innerHTML = html.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (m, lang, code) => {
@@ -138,19 +87,16 @@
             div.innerText = content;
         }
 
-        chatWindow.appendChild(div);
-        scrollToBottom();
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
         Prism.highlightAll();
     }
 
-    function scrollToBottom() { document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight; }
-
     function copyCode(btn) {
         const code = btn.parentElement.querySelector('code').innerText;
-        navigator.clipboard.writeText(code).then(() => {
-            btn.innerText = "Alındı!";
-            setTimeout(() => btn.innerText = "Kopyala", 2000);
-        });
+        navigator.clipboard.writeText(code);
+        btn.innerText = "Alındı!";
+        setTimeout(() => btn.innerText = "Kopyala", 2000);
     }
 </script>
 </body>
