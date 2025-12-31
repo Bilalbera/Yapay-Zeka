@@ -3,93 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Master Assistant</title>
+    <title>AI Master - Pro</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0b0c0d; --card: #16181a; --accent: #2563eb; --text: #f8fafc; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* API Giriş Ekranı */
-        #api-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .modal-content { background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid #334155; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .modal-content input { width: 100%; padding: 14px; margin: 20px 0; background: #000; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .modal-content input:focus { border-color: var(--accent); }
-        
-        /* Mesaj Alanı */
-        #chat-window { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 24px; scroll-behavior: smooth; }
-        .msg { padding: 16px 20px; border-radius: 18px; max-width: 85%; line-height: 1.6; font-size: 15px; position: relative; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .user { background: var(--accent); align-self: flex-end; color: white; border-bottom-right-radius: 4px; }
+        /* Modal */
+        #api-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid #334155; width: 90%; max-width: 420px; text-align: center; }
+        .modal-content input { width: 100%; padding: 14px; margin: 20px 0; background: #000; border: 1px solid #475569; color: white; border-radius: 12px; box-sizing: border-box; outline: none; }
+
+        /* Sohbet Alanı */
+        #chat-window { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .msg { padding: 14px 20px; border-radius: 18px; max-width: 85%; line-height: 1.6; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+        .user { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
         .ai { background: var(--card); align-self: flex-start; border: 1px solid #334155; border-bottom-left-radius: 4px; }
 
-        /* Kod Bloğu Stili */
+        /* Kod Bloğu */
         .code-container { position: relative; margin: 15px 0; border-radius: 12px; overflow: hidden; border: 1px solid #334155; background: #000; }
-        pre { margin: 0 !important; padding: 1.5rem !important; background: transparent !important; font-family: 'Consolas', monospace !important; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #334155; color: #f8fafc; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; z-index: 10; transition: 0.2s; }
-        .copy-btn:hover { background: #475569; }
-
-        .ai-img { max-width: 100%; border-radius: 12px; margin-top: 12px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-
-        /* Alt Yazma Alanı */
-        #input-area { padding: 25px; background: var(--card); display: flex; gap: 15px; border-top: 1px solid #1e293b; }
-        #userInput { flex: 1; background: #0b0c0d; border: 1px solid #334155; color: white; padding: 15px; border-radius: 14px; outline: none; font-size: 16px; }
-        #userInput:focus { border-color: var(--accent); }
-        button#send { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 14px; cursor: pointer; transition: 0.2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        button#send:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        pre { margin: 0 !important; padding: 1.5rem !important; background: transparent !important; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #334155; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; z-index: 10; }
         
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .ai-img { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid #334155; }
+
+        /* Alt Alan */
+        #input-area { padding: 20px; background: var(--card); display: flex; gap: 12px; border-top: 1px solid #1e293b; }
+        #userInput { flex: 1; background: #0b0c0d; border: 1px solid #334155; color: white; padding: 14px; border-radius: 12px; outline: none; }
+        button#send { background: var(--accent); color: white; border: none; width: 50px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
 <div id="api-modal">
     <div class="modal-content">
-        <h2 style="margin-top:0">✨ AI Assistant</h2>
-        <p style="color: #94a3b8; font-size: 14px;">Gemini API Anahtarınızı girerek sistemi aktif edin.</p>
+        <h2>🚀 AI Kurulumu</h2>
+        <p style="color: #94a3b8; font-size: 14px;">Lütfen yeni bir Gemini API Key girin.</p>
         <input type="password" id="api-input" placeholder="AIzaSy...">
-        <button onclick="saveKey()" style="width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px;">Sistemi Başlat</button>
-        <p style="font-size: 12px; margin-top: 15px;"><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent); text-decoration: none;">Ücretsiz anahtar al →</a></p>
+        <button onclick="saveKey()" style="width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">Başlat</button>
     </div>
 </div>
 
 <div id="chat-window">
-    <div class="msg ai">Sistem hazır. "Python'da liste oluşturma kodu yaz" diyebilir veya "Ormanda koşan robot resmi çiz" gibi komutlar verebilirsiniz.</div>
+    <div class="msg ai">Hazırım! Kod sorabilir veya görsel oluşturmamı isteyebilirsiniz (Örn: "Cyberpunk bir şehir çiz").</div>
 </div>
 
 <div id="input-area">
-    <input type="text" id="userInput" placeholder="Mesajınızı buraya yazın..." autocomplete="off">
-    <button id="send" onclick="askAI()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-    </button>
+    <input type="text" id="userInput" placeholder="Mesajınızı yazın..." autocomplete="off">
+    <button id="send" onclick="askAI()">🚀</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
 
 <script>
-    let API_KEY = localStorage.getItem('ai_key_stable');
-
+    let API_KEY = localStorage.getItem('ai_master_key');
     if (API_KEY) document.getElementById('api-modal').style.display = 'none';
 
     function saveKey() {
         const val = document.getElementById('api-input').value.trim();
-        if (val.startsWith("AIza")) {
-            localStorage.setItem('ai_key_stable', val);
+        if (val.length > 20) {
+            localStorage.setItem('ai_master_key', val);
             API_KEY = val;
             document.getElementById('api-modal').style.display = 'none';
-        } else alert("Hata: Geçersiz API anahtarı formatı.");
+        } else alert("Geçersiz anahtar!");
     }
 
-    // Enter Tuşu Dinleyici
-    document.getElementById('userInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') askAI();
-    });
+    document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') askAI(); });
 
     async function askAI() {
         const input = document.getElementById('userInput');
@@ -99,32 +81,42 @@
         addMessage(text, 'user');
         input.value = '';
 
-        // Görsel Motoru
-        const imageTriggers = ["çiz", "oluştur", "resim", "draw", "visualize", "generate image"];
-        if (imageTriggers.some(t => text.toLowerCase().includes(t))) {
-            addMessage("Görseliniz tasarlanıyor...", 'ai');
-            const prompt = encodeURIComponent(text);
-            const imageUrl = `https://pollinations.ai/p/${prompt}?width=1024&height=1024&seed=${Math.random()}&nologo=true`;
-            setTimeout(() => addMessage(imageUrl, 'ai', true), 1200);
+        // GÖRSEL OLUŞTURMA MANTIĞI
+        const triggers = ["çiz", "oluştur", "resim", "draw", "generate image"];
+        if (triggers.some(t => text.toLowerCase().includes(t))) {
+            addMessage("Görsel hazırlanıyor...", 'ai');
+            const cleanText = text.replace(/(çiz|oluştur|resim yap|yap|draw|generate|image)/gi, "").trim();
+            const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(cleanText)}?width=1024&height=1024&nologo=true&seed=${Math.random()}`;
+            setTimeout(() => addMessage(imageUrl, 'ai', true), 1000);
             return;
         }
 
-        try {
-            // Kararlı v1 Endpoint
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-            });
+        // GOOGLE API DENEME (Sırasıyla v1beta ve v1 modellerini dener)
+        const endpoints = [
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`
+        ];
 
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            
-            const aiText = data.candidates[0].content.parts[0].text;
-            addMessage(aiText, 'ai');
-        } catch (e) {
-            addMessage("Hata: " + e.message + " (Sıfırlamak için konsola: localStorage.clear())", 'ai');
+        let lastError = "";
+        for (let url of endpoints) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+                });
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content) {
+                    addMessage(data.candidates[0].content.parts[0].text, 'ai');
+                    return; // Başarılıysa dur
+                }
+                lastError = data.error ? data.error.message : "Bilinmeyen hata";
+            } catch (e) {
+                lastError = e.message;
+            }
         }
+        addMessage("Hata: " + lastError + " (Sıfırlamak için konsola localStorage.clear() yazın)", 'ai');
     }
 
     function addMessage(content, role, isImage = false) {
@@ -138,9 +130,9 @@
             let html = marked.parse(content);
             div.innerHTML = html.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (m, lang, code) => {
                 return `<div class="code-container">
-                            <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
-                            <pre><code ${lang}>${code}</code></pre>
-                        </div>`;
+                    <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+                    <pre><code ${lang}>${code}</code></pre>
+                </div>`;
             });
         } else {
             div.innerText = content;
@@ -151,15 +143,12 @@
         Prism.highlightAll();
     }
 
-    function scrollToBottom() {
-        const chatWindow = document.getElementById('chat-window');
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
+    function scrollToBottom() { document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight; }
 
     function copyCode(btn) {
         const code = btn.parentElement.querySelector('code').innerText;
         navigator.clipboard.writeText(code).then(() => {
-            btn.innerText = "Kopyalandı!";
+            btn.innerText = "Alındı!";
             setTimeout(() => btn.innerText = "Kopyala", 2000);
         });
     }
