@@ -64,10 +64,20 @@
 
     // --- BURASI AYARLAYACAĞIN BÖLÜM ---
     const customResponses = {
-        "selam": "Aleykümselam! Sana nasıl yardımcı olabilirim?",
-        "nasılsın": "Çok iyiyim, seni gördüm daha iyi oldum. Sen nasılsın?",
-        "kod yaz": "İşte Kodun:\n\n```javascript\nconsole.log('BilalAI Hazır!');\n```",
-        "kimsin": "Ben senin için özel olarak kodlanmış BilalAI'yim!"
+        "selam": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
+        "nasılsın": "Çok İyiyim, Sen Nasılsın?"
+        "kod yaz": "Hangi Tür Kod Yazmamı İstersin? (C++, Java, JavaScript vs.) ",
+        "kimsin": "Ben BilalAİ Benle Sohbet Edebilir Kod Yazabilir Hatta Görsel Bile Oluşturabilirsin!"
+        "merhaba": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
+        "merhaba bilalai": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
+        "selam bilalai": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
+        "roblox gui açma butonu kodu": "İşte Kodun: local button = script.Parent -- Butonun kendisi
+local guiFrame = button.Parent:WaitForChild("Frame") -- Açılacak olan pencere (Adı Frame ise)
+
+button.MouseButton1Click:Connect(function()
+    -- Eğer Frame görünürse kapatır, görünmezse açar (Toggle)
+    guiFrame.Visible = not guiFrame.Visible
+end)"              
     };
     // ---------------------------------
 
