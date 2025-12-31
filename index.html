@@ -61,7 +61,7 @@
     const input = document.getElementById('userInput');
     const status = document.getElementById('status');
 
-    // --- DÜZELTİLMİŞ BÖLÜM ---
+// --- BİLALAİ GELİŞMİŞ OYUN KODLARI BÖLÜMÜ ---
     const customResponses = {
         "selam": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
         "nasılsın": "Çok İyiyim, Sen Nasılsın?",
@@ -70,17 +70,87 @@
         "merhaba": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
         "merhaba bilalai": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
         "selam bilalai": "Merhaba Ben BilalAİ Sana Nasıl Yardımcı Olabilirim?",
-        "roblox gui açma butonu kodu": `İşte Kodun:
+        
+        // --- GELİŞMİŞ ROBLOX KODLARI ---
+        "roblox gui açma kapatma kodu": `İşte Kodun:
 \`\`\`lua
-local button = script.Parent -- Butonun kendisi
-local guiFrame = button.Parent:WaitForChild("Frame") -- Açılacak olan pencere
+-- Bu kod tek butonla menüyü hem açar hem kapatır
+local button = script.Parent
+local frame = button.Parent:WaitForChild("Frame")
 
 button.MouseButton1Click:Connect(function()
-    guiFrame.Visible = not guiFrame.Visible
+    frame.Visible = not frame.Visible
 end)
+\`\`\``,
+        "roblox gui kapatma butonu kodu": `İşte Kodun:
+\`\`\`lua
+-- Sadece kapatma işlevi gören buton (Genelde GUI köşesindeki kapat butonu)
+local closeButton = script.Parent
+local frame = closeButton.Parent -- Butonun içinde olduğu ana panel
+
+closeButton.MouseButton1Click:Connect(function()
+    frame.Visible = false
+end)
+\`\`\``,
+        "roblox animasyonlu menu sistemi": `İşte Kodun:
+\`\`\`lua
+-- Menü yumuşak bir şekilde büyüyerek açılır
+local TS = game:GetService("TweenService")
+local button = script.Parent
+local frame = button.Parent:WaitForChild("Frame")
+
+frame.Size = UDim2.new(0, 0, 0, 0) -- Başlangıçta küçük
+frame.Visible = false
+
+button.MouseButton1Click:Connect(function()
+    if not frame.Visible then
+        frame.Visible = true
+        TS:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Size = UDim2.new(0, 400, 0, 300)}):Play()
+    else
+        local tween = TS:Create(frame, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0)})
+        tween:Play()
+        tween.Completed:Connect(function() frame.Visible = false end)
+    end
+end)
+\`\`\``,
+        "roblox fly (uçma) kodu": `İşte Kodun:
+\`\`\`lua
+-- Karakterin havada asılı kalmasını sağlar
+local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+local bv = Instance.new("BodyVelocity")
+bv.Velocity = Vector3.new(0, 0, 0)
+bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+bv.Parent = hrp
+\`\`\``,
+
+        // --- GELİŞMİŞ MINECRAFT KOMUTLARI ---
+        "minecraft süper kılıç kodu": `İşte Kodun:
+\`\`\`mcfunction
+# 1000 seviye keskinlikte yok edici kılıç
+/give @p netherite_sword{Enchantments:[{id:sharpness,lvl:1000},{id:unbreaking,lvl:1000},{id:fire_aspect,lvl:1000}]} 1
+\`\`\``,
+        "minecraft görünmezlik ve güç kodu": `İşte Kodun:
+\`\`\`mcfunction
+# 10 dakika boyunca sınırsız güç ve görünmezlik
+/effect give @p strength 600 255
+/effect give @p invisibility 600 1
+\`\`\``,
+        "minecraft şimşek asası": `İşte Kodun:
+\`\`\`mcfunction
+# Sopayı eline alınca baktığın yere şimşek çakar (Komut Bloğu - Repeat)
+/execute as @a[nbt={SelectedItem:{id:"minecraft:stick"}}] at @s run summon lightning_bolt ^ ^ ^10
+\`\`\``,
+        "minecraft full set çekme kodu": `İşte Kodun:
+\`\`\`mcfunction
+/give @p netherite_helmet{Enchantments:[{id:protection,lvl:4}]} 1
+/give @p netherite_chestplate{Enchantments:[{id:protection,lvl:4}]} 1
+/give @p netherite_leggings{Enchantments:[{id:protection,lvl:4}]} 1
+/give @p netherite_boots{Enchantments:[{id:protection,lvl:4}]} 1
 \`\`\``
     };
-    // ---------------------------------
+    // -----------------------------------------
 
     input.addEventListener('keypress', e => e.key === 'Enter' && askAI());
 
