@@ -3,101 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini AI Assistant</title>
+    <title>AI Asistanım</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
-        :root { --bg: #1e1e1e; --chat-bg: #2d2d2d; --text: #e0e0e0; --accent: #4a9eff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        :root { --bg: #0f1011; --card: #1c1e21; --accent: #3b82f6; --text: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; }
-        .message { margin-bottom: 20px; padding: 15px; border-radius: 10px; max-width: 80%; }
-        .user { background: var(--accent); align-self: flex-end; margin-left: auto; }
-        .ai { background: var(--chat-bg); }
-
-        /* Kod Bloğu Tasarımı */
-        .code-wrapper { position: relative; margin: 15px 0; }
-        pre { background: #121212 !important; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #444; }
-        .copy-btn {
-            position: absolute; top: 10px; right: 10px;
-            background: #444; color: white; border: none; padding: 5px 10px;
-            border-radius: 5px; cursor: pointer; font-size: 12px;
+        /* API Modal (Popup) Tasarımı */
+        #api-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 999;
         }
-        .copy-btn:hover { background: #666; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 16px; border: 1px solid #333; width: 90%; max-width: 400px; text-align: center; }
+        .modal-content input { width: 100%; padding: 12px; margin: 15px 0; background: #000; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Sohbet Alanı */
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px 18px; border-radius: 12px; max-width: 80%; line-height: 1.6; word-wrap: break-word; }
+        .user { background: var(--accent); align-self: flex-end; }
+        .ai { background: var(--card); align-self: flex-start; border: 1px solid #333; }
 
-        #input-area { padding: 20px; background: var(--chat-bg); display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 5px; border: none; outline: none; }
-        button#send { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #image-preview { max-width: 300px; border-radius: 10px; margin-top: 10px; display: block; }
+        /* Kod Bloğu ve Kopyala Butonu */
+        .code-container { position: relative; margin: 15px 0; border-radius: 8px; overflow: hidden; }
+        pre { margin: 0 !important; padding: 1rem !important; background: #000 !important; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #333; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+        .copy-btn:hover { background: #555; }
+
+        /* Giriş Alanı */
+        #input-area { padding: 20px; background: var(--card); display: flex; gap: 10px; border-top: 1px solid #333; }
+        #userInput { flex: 1; background: #0f1011; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; outline: none; }
+        button#send { background: var(--accent); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="chat-container">
-    <div class="message ai">Merhaba! Sana nasıl yardımcı olabilirim? (Kod yazabilirim, görsel oluşturabilirim veya sohbet edebiliriz.)</div>
+<div id="api-modal">
+    <div class="modal-content">
+        <h3>🤖 Başlamadan Önce</h3>
+        <p style="font-size: 14px; color: #aaa;">Lütfen Google Gemini API anahtarınızı girin. Anahtarınız sadece bu tarayıcıda saklanır.</p>
+        <input type="password" id="api-input" placeholder="AI API Key...">
+        <button onclick="saveKey()" style="width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer;">Kaydet ve Başla</button>
+        <p style="font-size: 11px; margin-top: 10px;"><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent);">Buradan ücretsiz anahtar alabilirsiniz.</a></p>
+    </div>
+</div>
+
+<div id="chat-window">
+    <div class="msg ai">Merhaba! Ben hazır açıklamalı asistanınım. Kod yazabilirim, sorularını cevaplayabilirim.</div>
 </div>
 
 <div id="input-area">
-    <input type="text" id="user-input" placeholder="Bir şeyler yazın veya 'resim çiz' deyin...">
-    <button id="send">Gönder</button>
+    <input type="text" id="userInput" placeholder="Mesajınızı buraya yazın..." onkeypress="if(event.key==='Enter') askAI()">
+    <button id="send" onclick="askAI()">Gönder</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+
 <script>
-    const chatContainer = document.getElementById('chat-container');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send');
+    let API_KEY = localStorage.getItem('ai_key');
 
-    // Kopyalama Fonksiyonu
-    function copyCode(btn) {
-        const code = btn.nextElementSibling.innerText;
-        navigator.clipboard.writeText(code);
-        btn.innerText = "Kopyalandı!";
-        setTimeout(() => btn.innerText = "Kopyala", 2000);
+    // Sayfa açıldığında anahtar kontrolü
+    if (API_KEY) {
+        document.getElementById('api-modal').style.display = 'none';
     }
 
-    function addMessage(text, role, isImage = false) {
-        const div = document.createElement('div');
-        div.className = `message ${role}`;
-        
-        if (isImage) {
-            div.innerHTML = `<img src="${text}" id="image-preview" alt="AI Visual">`;
-        } else if (text.includes("```")) {
-            // Kod bloğu algılama ve formatlama
-            const parts = text.split("```");
-            const codeContent = parts[1];
-            div.innerHTML = `
-                <div class="code-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
-                    <pre><code class="language-javascript">${codeContent}</code></pre>
-                </div>`;
+    function saveKey() {
+        const val = document.getElementById('api-input').value;
+        if (val.length > 10) {
+            localStorage.setItem('ai_key', val);
+            API_KEY = val;
+            document.getElementById('api-modal').style.display = 'none';
         } else {
-            div.innerText = text;
+            alert("Geçerli bir API anahtarı girin!");
         }
-
-        chatContainer.appendChild(div);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-        Prism.highlightAll(); // Yeni eklenen kodu renklendir
     }
 
-    sendBtn.onclick = () => {
-        const text = userInput.value;
-        if (!text) return;
+    async function askAI() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if (!text || !API_KEY) return;
 
         addMessage(text, 'user');
-        userInput.value = '';
+        input.value = '';
 
-        // Örnek Yanıt Mekanizması (Burası API'ye bağlanacak)
-        setTimeout(() => {
-            if (text.toLowerCase().includes("kod")) {
-                addMessage("İşte istediğin örnek kod: \n```javascript\nfunction merhaba() {\n  console.log('Selam!');\n}```", 'ai');
-            } else if (text.toLowerCase().includes("resim") || text.toLowerCase().includes("çiz")) {
-                addMessage("https://picsum.photos/400/300", 'ai', true);
-            } else {
-                addMessage("Harika bir soru! Sana nasıl destek olabilirim?", 'ai');
-            }
-        }, 1000);
-    };
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+
+            const aiText = data.candidates[0].content.parts[0].text;
+            addMessage(aiText, 'ai');
+        } catch (e) {
+            addMessage("Hata oluştu! API anahtarınız geçersiz olabilir: " + e.message, 'ai');
+        }
+    }
+
+    function addMessage(content, role) {
+        const chatWindow = document.getElementById('chat-window');
+        const div = document.createElement('div');
+        div.className = `msg ${role}`;
+
+        if (role === 'ai') {
+            // Markdown'ı HTML'e çevir
+            let rawHtml = marked.parse(content);
+            // Kod bloklarını bul ve kopyala butonu ekleyerek düzenle
+            div.innerHTML = rawHtml.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (match, lang, code) => {
+                return `<div class="code-container">
+                            <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+                            <pre><code ${lang}>${code}</code></pre>
+                        </div>`;
+            });
+        } else {
+            div.innerText = content;
+        }
+
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        Prism.highlightAll(); // Yeni kodları renklendir
+    }
+
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            btn.innerText = "Alındı!";
+            setTimeout(() => btn.innerText = "Kopyala", 2000);
+        });
+    }
 </script>
-
 </body>
 </html>
