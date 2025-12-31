@@ -3,41 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI - Kararlı Sürüm</title>
+    <title>BilalAI - Gelişmiş Sürüm</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #238636; --text: #c9d1d9; --border: #30363d; }
+        :root { 
+            --bg: #0d1117; 
+            --card: #161b22; 
+            --accent: #238636; 
+            --text: #c9d1d9; 
+            --border: #30363d; 
+            --code-bg: #1c2128;
+        }
         
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
         
-        header { padding: 15px; background: var(--card); border-bottom: 1px solid var(--border); text-align: center; }
-        header h1 { margin: 0; font-size: 22px; color: #2ecc71; letter-spacing: 1px; }
+        header { 
+            padding: 15px; 
+            background: var(--card); 
+            border-bottom: 1px solid var(--border); 
+            text-align: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        header h1 { margin: 0; font-size: 22px; color: #2ecc71; }
 
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
         
-        /* Mesaj Balonları */
-        .msg { max-width: 85%; line-height: 1.6; font-size: 15px; border-radius: 12px; }
-        .user { align-self: flex-end; background: #1f6feb; color: white; padding: 10px 15px; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; width: 100%; background: transparent; }
+        .msg { max-width: 90%; line-height: 1.6; font-size: 15px; border-radius: 12px; padding: 12px 18px; }
+        .user { align-self: flex-end; background: #1f6feb; color: white; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: #21262d; border: 1px solid var(--border); border-bottom-left-radius: 2px; width: fit-content; max-width: 95%; }
 
-        /* Metin Alanı */
-        .text-content { color: var(--text); padding: 5px 0; }
-
-        /* Gri Kod Bloğu */
-        .code-container { position: relative; margin: 15px 0; background: #1c2128; border: 1px solid var(--border); border-radius: 8px; }
-        pre { margin: 0 !important; padding: 15px !important; background: #1c2128 !important; overflow-x: auto; }
-        code { font-family: 'Consolas', monospace !important; font-size: 14px !important; color: #e6edf3 !important; }
+        /* Kod Bloğu Tasarımı */
+        .code-container { 
+            position: relative; 
+            margin: 15px 0; 
+            background: var(--code-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px;
+            overflow: hidden;
+        }
         
-        .copy-btn { position: absolute; top: 8px; right: 8px; background: #30363d; color: #f0f6fc; border: 1px solid #8b949e; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; z-index: 10; }
+        pre { margin: 0 !important; padding: 20px !important; background: transparent !important; }
+        code { font-family: 'Fira Code', 'Consolas', monospace !important; font-size: 14px !important; }
+        
+        .copy-btn { 
+            position: absolute; 
+            top: 8px; 
+            right: 8px; 
+            background: #30363d; 
+            color: #f0f6fc; 
+            border: 1px solid var(--border); 
+            padding: 5px 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            transition: 0.2s;
+            z-index: 10;
+        }
         .copy-btn:hover { background: #444c56; }
 
-        /* Yazma Alanı */
-        #input-area { padding: 20px; background: var(--card); display: flex; gap: 10px; border-top: 1px solid var(--border); }
-        input { flex: 1; background: #010409; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #input-area { 
+            padding: 20px; 
+            background: var(--card); 
+            display: flex; 
+            gap: 10px; 
+            border-top: 1px solid var(--border); 
+        }
+        
+        input { 
+            flex: 1; 
+            background: #0d1117; 
+            border: 1px solid var(--border); 
+            color: white; 
+            padding: 12px; 
+            border-radius: 8px; 
+            outline: none; 
+        }
+        
+        button#send-btn { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 0 25px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
 
-        /* Durum Göstergesi */
-        .status-msg { font-style: italic; color: #8b949e; font-size: 13px; margin: 5px 0; display: none; }
+        .status-msg { font-style: italic; color: #8b949e; font-size: 13px; margin: 5px 20px; display: none; }
     </style>
 </head>
 <body>
@@ -45,13 +113,13 @@
 <header><h1>BilalAI</h1></header>
 
 <div id="chat-window">
-    <div class="msg ai"><div class="text-content">Merhaba! Ben BilalAI. Sana nasıl yardımcı olabilirim?</div></div>
+    <div class="msg ai">Merhaba! Ben BilalAI. Sana nasıl yardımcı olabilirim?</div>
 </div>
-<div id="status" class="status-msg" style="margin-left: 20px;">BilalAI düşünüyor...</div>
+<div id="status" class="status-msg">BilalAI yanıt üretiyor...</div>
 
 <div id="input-area">
     <input type="text" id="userInput" placeholder="Mesajınızı yazın..." autocomplete="off">
-    <button onclick="askAI()">Gönder</button>
+    <button id="send-btn" onclick="askAI()">Gönder</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
@@ -70,32 +138,21 @@
 
         addMessage(text, 'user');
         input.value = '';
-
-        // Zeki Düşünme Göstergesi: Uzun mesaj veya kod kelimelerinde tetiklenir
-        const needsThinking = text.length > 20 || /kod|yaz|script|nasil|yap/i.test(text);
-        if (needsThinking) status.style.display = 'block';
+        status.style.display = 'block';
 
         try {
-            // Hata Payını Azaltmak İçin Optimize Edilmiş İstek
-            const prompt = `Adın BilalAI. Kod isteklerinde 'İşte Kodun:' ile başla. Cevabın: ${text}`;
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`);
+            // API'ye sistem talimatı ekleme
+            const systemPrompt = "Senin adın BilalAI. Eğer kullanıcı senden kod isterse, cevabına mutlaka 'İşte Kodun:' ifadesiyle başla. Kodları markdown formatında yaz.";
+            const fullPrompt = `${systemPrompt}\n\nKullanıcı: ${text}`;
             
-            if (response.status === 429) {
-                throw new Error("Çok fazla istek gönderildi. Lütfen biraz bekle.");
-            }
+            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?model=openai`);
+            
+            if (!response.ok) throw new Error("Bağlantı hatası oluştu.");
 
             const aiResponse = await response.text();
             status.style.display = 'none';
-
-            let finalContent = aiResponse;
-            if (finalContent.includes("```")) {
-                // Eğer AI zaten "İşte Kodun:" demediyse biz ekleyelim
-                if (!finalContent.toLowerCase().includes("işte kodun")) {
-                    finalContent = "İşte Kodun:\n\n" + finalContent;
-                }
-            }
-
-            addMessage(finalContent, 'ai');
+            addMessage(aiResponse, 'ai');
+            
         } catch (e) {
             status.style.display = 'none';
             addMessage("Hata: " + e.message, 'ai');
@@ -107,29 +164,48 @@
         div.className = `msg ${role}`;
 
         if (role === 'ai') {
-            const rawHtml = marked.parse(content);
-            // Kod bloklarını yakalayıp gri konteyner içine alıyoruz
-            const processedHtml = rawHtml.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (m, lang, code) => {
-                return `<div class="code-container">
-                    <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
-                    <pre><code ${lang}>${code}</code></pre>
-                </div>`;
+            // Markdown'ı HTML'e çevir
+            let htmlContent = marked.parse(content);
+            
+            // Kod bloklarını yakala ve özel konteyner içine yerleştir
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            const codeBlocks = tempDiv.querySelectorAll('pre');
+            codeBlocks.forEach(pre => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-container';
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerText = 'Kopyala';
+                copyBtn.onclick = () => copyCode(copyBtn, pre.innerText);
+                
+                wrapper.appendChild(copyBtn);
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
             });
-            div.innerHTML = `<div class="text-content">${processedHtml}</div>`;
+            
+            div.innerHTML = tempDiv.innerHTML;
         } else {
             div.innerText = content;
         }
 
         chatWin.appendChild(div);
         chatWin.scrollTop = chatWin.scrollHeight;
-        Prism.highlightAll();
+        
+        // Yeni eklenen kodları renklendir
+        Prism.highlightAllUnder(div);
     }
 
-    function copyCode(btn) {
-        const code = btn.parentElement.querySelector('code').innerText;
-        navigator.clipboard.writeText(code).then(() => {
-            btn.innerText = "Alındı!";
-            setTimeout(() => btn.innerText = "Kopyala", 2000);
+    function copyCode(btn, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            btn.innerText = "Kopyalandı!";
+            btn.style.background = "#238636";
+            setTimeout(() => {
+                btn.innerText = "Kopyala";
+                btn.style.background = "#30363d";
+            }, 2000);
         });
     }
 </script>
