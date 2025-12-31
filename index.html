@@ -3,50 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI - Kod ve Sohbet</title>
+    <title>BilalAI - Akıllı Mod</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root { --bg: #0d1117; --card: #161b22; --accent: #238636; --text: #c9d1d9; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        
-        /* Başlık Alanı */
-        header { padding: 15px 20px; background: var(--card); border-bottom: 1px solid #30363d; text-align: center; }
-        header h1 { margin: 0; font-size: 20px; color: #2ecc71; }
-
-        /* Sohbet Penceresi */
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 90%; line-height: 1.6; font-size: 15px; }
+        header { padding: 15px; background: var(--card); border-bottom: 1px solid #30363d; text-align: center; font-weight: bold; color: #2ecc71; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 90%; line-height: 1.5; font-size: 15px; }
         .user { align-self: flex-end; background: #1f6feb; color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; }
         .ai { align-self: flex-start; width: 100%; }
-        
-        /* Normal Metin Yazıları */
-        .text-content { padding: 5px 0; }
-
-        /* Kod Bloğu Tasarımı (Gri Alan) */
-        .code-container { position: relative; margin: 15px 0; background: #1c2128; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+        .code-container { position: relative; margin: 15px 0; background: #1c2128; border: 1px solid #30363d; border-radius: 8px; }
         pre { margin: 0 !important; padding: 15px !important; background: #1c2128 !important; }
-        code { font-family: 'Consolas', 'Monaco', monospace !important; font-size: 14px !important; }
-        .copy-btn { position: absolute; top: 8px; right: 8px; background: #30363d; color: #f0f6fc; border: 1px solid #8b949e; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; z-index: 10; }
-        .copy-btn:hover { background: #444c56; }
-
-        /* Alt Yazma Alanı */
+        .copy-btn { position: absolute; top: 8px; right: 8px; background: #30363d; color: white; border: 1px solid #8b949e; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; }
         #input-area { padding: 20px; background: var(--card); display: flex; gap: 10px; border-top: 1px solid #30363d; }
         input { flex: 1; background: #010409; border: 1px solid #30363d; color: white; padding: 12px; border-radius: 8px; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { filter: brightness(1.2); }
-
-        .thinking { font-style: italic; color: #8b949e; font-size: 14px; margin-left: 5px; }
+        button { background: var(--accent); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .thinking { font-style: italic; color: #8b949e; margin: 5px 20px; font-size: 13px; display: none; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>BilalAI</h1>
-</header>
-
-<div id="chat-window">
-    <div class="msg ai"><div class="text-content">Selam! Ben BilalAI. Sana nasıl yardımcı olabilirim? Kod yazabilirim veya sohbet edebiliriz.</div></div>
-</div>
+<header>BilalAI v2</header>
+<div id="chat-window"></div>
+<div id="thinking-indicator" class="thinking">BilalAI düşünüyor...</div>
 
 <div id="input-area">
     <input type="text" id="userInput" placeholder="Bir şeyler yazın..." autocomplete="off">
@@ -62,36 +42,31 @@
     async function askAI() {
         const input = document.getElementById('userInput');
         const text = input.value.trim();
+        const indicator = document.getElementById('thinking-indicator');
         if (!text) return;
 
-        // Kullanıcı mesajını ekle
         addMessage(text, 'user');
         input.value = '';
 
-        // Düşünüyor yazısını ekle
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.className = 'thinking';
-        thinkingDiv.innerText = "BilalAI düşünüyor...";
-        document.getElementById('chat-window').appendChild(thinkingDiv);
-        document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+        // Zeki Düşünme Mantığı: Eğer mesaj 20 karakterden uzunsa veya "kod, script, nasıl yapılır" gibi kelimeler içeriyorsa düşünme yazısını göster
+        const isComplex = text.length > 20 || /kod|script|yaz|oluştur|nasil|yapilir/i.test(text);
+        if (isComplex) indicator.style.display = "block";
 
         try {
-            // Sistem talimatı ile güçlendirilmiş anahtarsız API
-            const systemPrompt = "Senin adın BilalAI. Bir yazılım uzmanı ve dost canlısı bir asistansın. Kod yazarken temiz ve Türkçe açıklamalar yap.";
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt + "\nKullanıcı: " + text)}?model=openai`);
-            let aiResponse = await response.text();
+            const system = "Senin adın BilalAI. Kod isteklerinde sadece kodu ve kısa açıklamayı ver. Gereksiz konuşma.";
+            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(system + "\n" + text)}?model=openai`);
+            let result = await response.text();
             
-            thinkingDiv.remove();
+            indicator.style.display = "none";
 
-            // Eğer kod bloğu varsa başına "İşte Kodun:" ekle
-            if (aiResponse.includes("```")) {
-                aiResponse = "İşte Kodun:\n\n" + aiResponse;
+            if (result.includes("```")) {
+                result = "İşte Kodun:\n\n" + result;
             }
             
-            addMessage(aiResponse, 'ai');
+            addMessage(result, 'ai');
         } catch (e) {
-            thinkingDiv.remove();
-            addMessage("Üzgünüm, şu an bağlantı kurulamadı. Lütfen tekrar dene.", 'ai');
+            indicator.style.display = "none";
+            addMessage("Hata: Bağlantı kesildi.", 'ai');
         }
     }
 
@@ -102,14 +77,9 @@
 
         if (role === 'ai') {
             let html = marked.parse(content);
-            // Kod bloklarını yakala ve özel gri kutu içine al
-            let processedHtml = html.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (m, lang, code) => {
-                return `<div class="code-container">
-                    <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
-                    <pre><code ${lang}>${code}</code></pre>
-                </div>`;
+            div.innerHTML = html.replace(/<pre><code([\s\S]*?)>([\s\S]*?)<\/code><\/pre>/g, (m, lang, code) => {
+                return `<div class="code-container"><button class="copy-btn" onclick="copy(this)">Kopyala</button><pre><code ${lang}>${code}</code></pre></div>`;
             });
-            div.innerHTML = `<div class="text-content">${processedHtml}</div>`;
         } else {
             div.innerText = content;
         }
@@ -119,12 +89,11 @@
         Prism.highlightAll();
     }
 
-    function copyCode(btn) {
+    function copy(btn) {
         const code = btn.parentElement.querySelector('code').innerText;
-        navigator.clipboard.writeText(code).then(() => {
-            btn.innerText = "Kopyalandı!";
-            setTimeout(() => btn.innerText = "Kopyala", 2000);
-        });
+        navigator.clipboard.writeText(code);
+        btn.innerText = "Kopyalandı!";
+        setTimeout(() => btn.innerText = "Kopyala", 2000);
     }
 </script>
 </body>
