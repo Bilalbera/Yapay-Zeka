@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root { --bg: #1e1e1e; --chat-bg: #2d2d2d; --text: #e0e0e0; --accent: #4a9eff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px; }
+        .message { margin-bottom: 20px; padding: 15px; border-radius: 10px; max-width: 80%; }
+        .user { background: var(--accent); align-self: flex-end; margin-left: auto; }
+        .ai { background: var(--chat-bg); }
+
+        /* Kod Bloğu Tasarımı */
+        .code-wrapper { position: relative; margin: 15px 0; }
+        pre { background: #121212 !important; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #444; }
+        .copy-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: #444; color: white; border: none; padding: 5px 10px;
+            border-radius: 5px; cursor: pointer; font-size: 12px;
+        }
+        .copy-btn:hover { background: #666; }
+
+        #input-area { padding: 20px; background: var(--chat-bg); display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 5px; border: none; outline: none; }
+        button#send { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #image-preview { max-width: 300px; border-radius: 10px; margin-top: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div class="message ai">Merhaba! Sana nasıl yardımcı olabilirim? (Kod yazabilirim, görsel oluşturabilirim veya sohbet edebiliriz.)</div>
+</div>
+
+<div id="input-area">
+    <input type="text" id="user-input" placeholder="Bir şeyler yazın veya 'resim çiz' deyin...">
+    <button id="send">Gönder</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send');
+
+    // Kopyalama Fonksiyonu
+    function copyCode(btn) {
+        const code = btn.nextElementSibling.innerText;
+        navigator.clipboard.writeText(code);
+        btn.innerText = "Kopyalandı!";
+        setTimeout(() => btn.innerText = "Kopyala", 2000);
+    }
+
+    function addMessage(text, role, isImage = false) {
+        const div = document.createElement('div');
+        div.className = `message ${role}`;
+        
+        if (isImage) {
+            div.innerHTML = `<img src="${text}" id="image-preview" alt="AI Visual">`;
+        } else if (text.includes("```")) {
+            // Kod bloğu algılama ve formatlama
+            const parts = text.split("```");
+            const codeContent = parts[1];
+            div.innerHTML = `
+                <div class="code-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+                    <pre><code class="language-javascript">${codeContent}</code></pre>
+                </div>`;
+        } else {
+            div.innerText = text;
+        }
+
+        chatContainer.appendChild(div);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        Prism.highlightAll(); // Yeni eklenen kodu renklendir
+    }
+
+    sendBtn.onclick = () => {
+        const text = userInput.value;
+        if (!text) return;
+
+        addMessage(text, 'user');
+        userInput.value = '';
+
+        // Örnek Yanıt Mekanizması (Burası API'ye bağlanacak)
+        setTimeout(() => {
+            if (text.toLowerCase().includes("kod")) {
+                addMessage("İşte istediğin örnek kod: \n```javascript\nfunction merhaba() {\n  console.log('Selam!');\n}```", 'ai');
+            } else if (text.toLowerCase().includes("resim") || text.toLowerCase().includes("çiz")) {
+                addMessage("https://picsum.photos/400/300", 'ai', true);
+            } else {
+                addMessage("Harika bir soru! Sana nasıl destek olabilirim?", 'ai');
+            }
+        }, 1000);
+    };
+</script>
+
+</body>
+</html>
