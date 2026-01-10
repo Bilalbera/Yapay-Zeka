@@ -3,78 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAİ - Yerel Zeka</title>
+    <title>BilalAİ - Akıllı Asistan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         body { font-family: 'Google Sans', sans-serif; background-color: #f8fafd; }
-        .sidebar { transition: width 0.3s ease; }
-        .chat-area { height: calc(100vh - 180px); scroll-behavior: smooth; }
-        .user-msg { background-color: #e9eef6; border-radius: 24px; padding: 12px 20px; max-width: 80%; align-self: flex-end; }
-        .ai-msg { background-color: transparent; max-width: 90%; align-self: flex-start; }
-        .loading-bar { transition: width 0.3s ease; }
-        pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 12px; margin: 10px 0; overflow-x: auto; font-size: 0.85rem; }
+        .chat-area { height: calc(100vh - 160px); scroll-behavior: smooth; }
+        .user-msg { background-color: #e9eef6; border-radius: 20px; padding: 12px 18px; max-width: 80%; align-self: flex-end; margin-bottom: 1rem; }
+        .ai-msg { background-color: transparent; max-width: 90%; align-self: flex-start; margin-bottom: 1.5rem; padding-left: 1rem; }
+        .loading-bar { transition: width 0.4s ease; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-[#1f1f1f]">
 
-    <aside id="sidebar" class="w-72 bg-[#f0f4f9] flex flex-col p-4 hidden md:flex">
-        <button onclick="window.location.reload()" class="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#d3d9e1] transition-all p-3 rounded-full w-fit px-5 mb-8">
-            <i class="fa-solid fa-plus text-lg"></i>
+    <aside class="w-72 bg-[#f0f4f9] flex flex-col p-4 hidden md:flex border-r border-gray-200">
+        <button id="newChatBtn" class="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#d3d9e1] transition-all p-3 rounded-full w-fit px-6 mb-8 shadow-sm">
+            <i class="fa-solid fa-plus"></i>
             <span class="font-medium text-sm">Yeni sohbet</span>
         </button>
 
         <div class="flex-1 overflow-y-auto">
-            <p class="text-xs font-semibold text-gray-500 mb-4 px-2 uppercase tracking-wider">Geçmiş</p>
-            <div id="chatHistory" class="space-y-1">
-                </div>
+            <p class="text-xs font-bold text-gray-500 mb-4 px-2 uppercase">Sohbet Geçmişi</p>
+            <div id="chatHistory" class="space-y-1 text-sm"></div>
         </div>
 
-        <div class="mt-auto space-y-2 pt-4 border-t border-gray-300">
-            <div class="flex flex-col gap-2 px-2">
-                <span id="statusText" class="text-[10px] font-bold text-blue-600 uppercase">Sistem Başlatılıyor...</span>
-                <div class="w-full bg-gray-200 rounded-full h-1.5">
-                    <div id="progressBar" class="loading-bar bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+        <div class="mt-auto border-t border-gray-300 pt-4">
+            <div id="statusBox" class="px-2 mb-4">
+                <div id="statusLabel" class="text-[10px] font-bold text-blue-600 mb-1 tracking-tighter text-wrap">BAĞLANTI BEKLENİYOR...</div>
+                <div class="w-full bg-gray-300 rounded-full h-1.5 overflow-hidden">
+                    <div id="progressBar" class="loading-bar bg-blue-600 h-full w-0"></div>
                 </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 text-sm text-gray-600">
-                <i class="fa-solid fa-microchip"></i> <span>BilalAİ Engine v1.0</span>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col relative bg-white md:rounded-l-[32px] shadow-2xl overflow-hidden">
-        
-        <header class="p-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-xl font-medium tracking-tight">BilalAİ</span>
-                <span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold">LOCAL</span>
-            </div>
+    <main class="flex-1 flex flex-col bg-white md:rounded-l-[32px] shadow-2xl overflow-hidden relative">
+        <header class="p-4 flex justify-between items-center border-b border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-gradient-to-tr from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">B</div>
+                <div class="text-blue-600 text-2xl font-bold">✦</div>
+                <h1 class="text-lg font-medium">BilalAİ</h1>
             </div>
+            <div class="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">B</div>
         </header>
 
-        <div id="chatDisplay" class="chat-area overflow-y-auto px-4 md:px-24 py-6 flex flex-col gap-8">
+        <div id="chatDisplay" class="chat-area overflow-y-auto px-4 md:px-24 py-8 flex flex-col">
             <div id="welcomeScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4 pt-20">
-                <h2 class="text-4xl font-medium bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-400 bg-clip-text text-transparent">Merhaba, Ben BilalAİ.</h2>
-                <p class="text-gray-500 max-w-sm text-sm">Sana bugün nasıl yardımcı olabilirim? Her şey tamamen senin cihazında çalışıyor.</p>
+                <h2 class="text-4xl font-medium tracking-tight bg-gradient-to-r from-blue-700 to-red-500 bg-clip-text text-transparent">Sana nasıl yardımcı olabilirim?</h2>
+                <p class="text-gray-500 text-sm">WebGPU Destekli Yerel Zeka Motoru</p>
             </div>
         </div>
 
-        <div class="p-4 bg-white border-t md:border-none">
-            <div class="max-w-3xl mx-auto">
-                <div class="relative flex items-center bg-[#f0f4f9] rounded-[28px] px-4 py-2 focus-within:shadow-md transition-all">
-                    <textarea id="userInput" rows="1" placeholder="BilalAİ'ye sorun..." 
-                        class="w-full bg-transparent p-3 outline-none resize-none max-h-40 text-base"
-                        oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
-                    
-                    <button id="sendBtn" disabled onclick="sendMessage()" class="ml-2 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm disabled:opacity-30 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-paper-plane text-blue-600"></i>
-                    </button>
-                </div>
-                <p class="text-[10px] text-center text-gray-400 mt-3">BilalAİ yanlış bilgi verebilir. Verileri doğrulamayı unutmayın.</p>
+        <div class="p-4">
+            <div class="max-w-3xl mx-auto relative flex items-center bg-[#f0f4f9] rounded-[30px] px-4 py-2 border border-transparent focus-within:bg-white focus-within:shadow-lg">
+                <textarea id="userInput" rows="1" placeholder="BilalAİ'ye bir mesaj yaz..." 
+                    class="w-full bg-transparent p-3 outline-none resize-none max-h-48 text-base"></textarea>
+                
+                <button id="sendBtn" disabled class="ml-2 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md disabled:opacity-20 transition-all">
+                    <i class="fa-solid fa-paper-plane text-blue-600"></i>
+                </button>
             </div>
         </div>
     </main>
@@ -86,104 +75,97 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const progressBar = document.getElementById('progressBar');
-        const statusText = document.getElementById('statusText');
+        const statusLabel = document.getElementById('statusLabel');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const chatHistory = document.getElementById('chatHistory');
+        const newChatBtn = document.getElementById('newChatBtn');
 
-        // Kararlı bir model seçimi
-        const modelId = "Llama-3-8B-Instruct-v0.1-q4f16_1-MLC";
+        // Daha kararlı ve hafif model (WebGPU hatası ihtimalini düşürür)
+        const modelId = "Gemma-2b-it-q4f16_1-MLC"; 
         let engine;
-        let messages = [
-            { role: "system", content: "Senin adın BilalAİ. Çok zeki, yardımsever ve profesyonel bir yapay zekasın. Kullanıcıya her zaman en doğru ve yaratıcı cevapları verirsin." }
+        let chatMessages = [
+            { role: "system", content: "Senin adın BilalAİ. Çok zeki ve her şeyi bilen bir asistansın." }
         ];
 
         async function init() {
+            if (!navigator.gpu) {
+                statusLabel.innerText = "HATA: TARAYICIN WEBGPU DESTEKLEMİYOR!";
+                statusLabel.classList.replace('text-blue-600', 'text-red-600');
+                return;
+            }
+
             try {
                 engine = new webllm.MLCEngine();
                 engine.setInitProgressCallback((report) => {
                     const progress = Math.round(report.progress * 100);
                     progressBar.style.width = progress + "%";
-                    statusText.innerText = `Yükleniyor: %${progress}`;
-                    
-                    if (report.progress === 1) {
-                        statusText.innerText = "BilalAİ Hazır";
-                        statusText.classList.replace('text-blue-600', 'text-green-600');
+                    statusLabel.innerText = `YÜKLENİYOR: %${progress}`;
+                    if(report.progress === 1) {
+                        statusLabel.innerText = "BİLALAİ AKTİF";
                         sendBtn.disabled = false;
                     }
                 });
                 await engine.reload(modelId);
             } catch (err) {
-                statusText.innerText = "Hata: WebGPU Desteklenmiyor";
+                statusLabel.innerText = "BAĞLANTI HATASI! (GPU BELLEĞİ YETERSİZ OLABİLİR)";
                 console.error(err);
             }
         }
 
         window.sendMessage = async () => {
             const text = userInput.value.trim();
-            if (!text) return;
+            if (!text || sendBtn.disabled) return;
 
             if (welcomeScreen) welcomeScreen.style.display = 'none';
 
-            // Kullanıcı Mesajı Ekle
             appendMessage(text, 'user');
             userInput.value = '';
             userInput.style.height = 'auto';
 
-            // Geçmişe ekle (Sidebar)
-            const historyItem = document.createElement('div');
-            historyItem.className = "flex items-center gap-3 p-3 hover:bg-[#e1e6ed] rounded-lg cursor-pointer text-sm truncate";
-            historyItem.innerHTML = `<i class="fa-regular fa-comment text-xs"></i> ${text}`;
-            chatHistory.prepend(historyItem);
+            // Hafızaya Ekle
+            chatMessages.push({ role: "user", content: text });
 
-            // AI Hazırlık
-            const aiDiv = appendMessage("Düşünüyor...", 'ai');
-            messages.push({ role: "user", content: text });
+            const aiPara = appendMessage("...", 'ai');
+            let fullText = "";
 
             try {
-                let fullReply = "";
-                const completion = await engine.chat.completions.create({
-                    messages,
-                    stream: true,
+                const chunks = await engine.chat.completions.create({
+                    messages: chatMessages,
+                    stream: true
                 });
 
-                for await (const chunk of completion) {
+                for await (const chunk of chunks) {
                     const content = chunk.choices[0]?.delta?.content || "";
-                    fullReply += content;
-                    aiDiv.innerHTML = `<p class="text-sm leading-relaxed">${fullReply.replace(/\n/g, '<br>')}</p>`;
+                    fullText += content;
+                    aiPara.innerText = fullText;
                     chatDisplay.scrollTop = chatDisplay.scrollHeight;
                 }
-                messages.push({ role: "assistant", content: fullReply });
+                chatMessages.push({ role: "assistant", content: fullText });
             } catch (e) {
-                aiDiv.innerText = "Üzgünüm, bir hata oluştu. Lütfen tekrar dene.";
+                aiPara.innerText = "Üzgünüm, işlem sırasında bir hata oluştu. Lütfen tekrar dene.";
             }
         };
 
         function appendMessage(text, sender) {
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex gap-4 ${sender === 'user' ? 'justify-end' : ''}`;
-            
-            const icon = sender === 'ai' ? 
-                `<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-robot text-xs"></i></div>` : '';
-            
-            wrapper.innerHTML = `
-                ${icon}
-                <div class="${sender === 'user' ? 'user-msg' : 'ai-msg flex-1'}">
-                    <p class="text-sm leading-relaxed">${text}</p>
-                </div>
-            `;
-            
-            chatDisplay.appendChild(wrapper);
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'user-msg' : 'ai-msg';
+            div.innerText = text;
+            chatDisplay.appendChild(div);
             chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            return wrapper.querySelector('p');
+            return div;
         }
 
-        // Enter ile gönder
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // Yeni Sohbet: Sayfayı yenilemeden hafızayı temizler
+        newChatBtn.onclick = () => {
+            chatMessages = [{ role: "system", content: "Senin adın BilalAİ." }];
+            chatDisplay.innerHTML = '';
+            chatDisplay.appendChild(welcomeScreen);
+            welcomeScreen.style.display = 'flex';
+            statusLabel.innerText = "YENİ SOHBET BAŞLATILDI";
+        };
+
+        sendBtn.onclick = sendMessage;
+        userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
         init();
     </script>
