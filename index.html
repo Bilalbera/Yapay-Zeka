@@ -3,84 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini 2.0 - Local Intelligence</title>
+    <title>BilalAİ - Yerel Zeka</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         body { font-family: 'Google Sans', sans-serif; background-color: #f8fafd; }
-        .sidebar { transition: all 0.3s ease; }
+        .sidebar { transition: width 0.3s ease; }
         .chat-area { height: calc(100vh - 180px); scroll-behavior: smooth; }
-        .message-ai { background-color: transparent; }
-        .message-user { background-color: #e9eef6; border-radius: 20px; padding: 10px 20px; max-width: 80%; }
-        .typing-indicator::after { content: '...'; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-        pre { background: #1e1e1e; color: white; padding: 15px; border-radius: 12px; margin: 10px 0; overflow-x: auto; }
+        .user-msg { background-color: #e9eef6; border-radius: 24px; padding: 12px 20px; max-width: 80%; align-self: flex-end; }
+        .ai-msg { background-color: transparent; max-width: 90%; align-self: flex-start; }
+        .loading-bar { transition: width 0.3s ease; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 12px; margin: 10px 0; overflow-x: auto; font-size: 0.85rem; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-[#1f1f1f]">
 
-    <aside id="sidebar" class="w-72 bg-[#f0f4f9] flex flex-col p-4 z-50">
-        <button onclick="newChat()" class="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#d3d9e1] transition-colors p-3 rounded-full w-fit px-5 mb-8">
+    <aside id="sidebar" class="w-72 bg-[#f0f4f9] flex flex-col p-4 hidden md:flex">
+        <button onclick="window.location.reload()" class="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#d3d9e1] transition-all p-3 rounded-full w-fit px-5 mb-8">
             <i class="fa-solid fa-plus text-lg"></i>
             <span class="font-medium text-sm">Yeni sohbet</span>
         </button>
 
         <div class="flex-1 overflow-y-auto">
-            <p class="text-xs font-semibold text-gray-500 mb-4 px-2">Yakın Zamandakiler</p>
+            <p class="text-xs font-semibold text-gray-500 mb-4 px-2 uppercase tracking-wider">Geçmiş</p>
             <div id="chatHistory" class="space-y-1">
                 </div>
         </div>
 
         <div class="mt-auto space-y-2 pt-4 border-t border-gray-300">
-            <div class="flex items-center gap-3 p-3 hover:bg-[#e1e6ed] rounded-lg cursor-pointer transition-colors">
-                <i class="fa-regular fa-circle-question"></i> <span class="text-sm">Yardım</span>
+            <div class="flex flex-col gap-2 px-2">
+                <span id="statusText" class="text-[10px] font-bold text-blue-600 uppercase">Sistem Başlatılıyor...</span>
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                    <div id="progressBar" class="loading-bar bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+                </div>
             </div>
-            <div class="flex items-center gap-3 p-3 hover:bg-[#e1e6ed] rounded-lg cursor-pointer transition-colors">
-                <i class="fa-solid fa-clock-rotate-left"></i> <span class="text-sm">Etkinlik</span>
-            </div>
-            <div id="modelStatus" class="text-[10px] uppercase tracking-widest text-blue-600 font-bold px-3">
-                Motor Bekleniyor...
+            <div class="flex items-center gap-3 p-3 text-sm text-gray-600">
+                <i class="fa-solid fa-microchip"></i> <span>BilalAİ Engine v1.0</span>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col relative bg-white md:rounded-l-[30px] shadow-xl overflow-hidden">
+    <main class="flex-1 flex flex-col relative bg-white md:rounded-l-[32px] shadow-2xl overflow-hidden">
         
         <header class="p-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <span class="text-xl font-medium">Gemini <span class="text-blue-600 text-sm">Local</span></span>
-                <i class="fa-solid fa-caret-down text-xs text-gray-500"></i>
+                <span class="text-xl font-medium tracking-tight">BilalAİ</span>
+                <span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded font-bold">LOCAL</span>
             </div>
-            <div class="flex gap-4 items-center">
-                <div class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">Gemma 2B</div>
-                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">U</div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-tr from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">B</div>
             </div>
         </header>
 
-        <div id="chatDisplay" class="chat-area overflow-y-auto px-4 md:px-20 py-10 space-y-10">
-            <div id="welcomeScreen" class="h-full flex flex-col items-center justify-center text-center space-y-6">
-                <h2 class="text-4xl font-medium bg-gradient-to-r from-blue-600 via-purple-500 to-red-400 bg-clip-text text-transparent">Merhaba, Sana nasıl yardımcı olabilirim?</h2>
-                <p class="text-gray-500 max-w-md">API anahtarı olmadan, doğrudan tarayıcında çalışan yerel zeka motoru.</p>
+        <div id="chatDisplay" class="chat-area overflow-y-auto px-4 md:px-24 py-6 flex flex-col gap-8">
+            <div id="welcomeScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4 pt-20">
+                <h2 class="text-4xl font-medium bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-400 bg-clip-text text-transparent">Merhaba, Ben BilalAİ.</h2>
+                <p class="text-gray-500 max-w-sm text-sm">Sana bugün nasıl yardımcı olabilirim? Her şey tamamen senin cihazında çalışıyor.</p>
             </div>
         </div>
 
-        <div class="p-4 bg-white">
+        <div class="p-4 bg-white border-t md:border-none">
             <div class="max-w-3xl mx-auto">
-                <div class="relative flex items-end bg-[#f0f4f9] rounded-[28px] p-2 pr-4 focus-within:shadow-md transition-shadow">
-                    <textarea id="prompt" rows="1" placeholder="Buraya bir şeyler yazın" 
-                        class="w-full bg-transparent p-4 outline-none resize-none max-h-40 text-base"
+                <div class="relative flex items-center bg-[#f0f4f9] rounded-[28px] px-4 py-2 focus-within:shadow-md transition-all">
+                    <textarea id="userInput" rows="1" placeholder="BilalAİ'ye sorun..." 
+                        class="w-full bg-transparent p-3 outline-none resize-none max-h-40 text-base"
                         oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
                     
-                    <div class="flex gap-3 mb-2">
-                        <i class="fa-solid fa-image text-gray-500 hover:text-blue-600 cursor-pointer p-2"></i>
-                        <i class="fa-solid fa-microphone text-gray-500 hover:text-blue-600 cursor-pointer p-2"></i>
-                        <button id="sendBtn" disabled onclick="handleAction()" class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm disabled:opacity-50">
-                            <i class="fa-solid fa-paper-plane text-blue-600"></i>
-                        </button>
-                    </div>
+                    <button id="sendBtn" disabled onclick="sendMessage()" class="ml-2 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm disabled:opacity-30 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-paper-plane text-blue-600"></i>
+                    </button>
                 </div>
-                <p class="text-[11px] text-center text-gray-400 mt-3">Gemini, kişiler ve yerler hakkında yanlış bilgiler verebilir. <a href="#" class="underline">Gizliliğinizi kontrol edin.</a></p>
+                <p class="text-[10px] text-center text-gray-400 mt-3">BilalAİ yanlış bilgi verebilir. Verileri doğrulamayı unutmayın.</p>
             </div>
         </div>
     </main>
@@ -89,63 +83,91 @@
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
         const chatDisplay = document.getElementById('chatDisplay');
-        const promptInput = document.getElementById('prompt');
+        const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
-        const modelStatus = document.getElementById('modelStatus');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
         const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatHistory = document.getElementById('chatHistory');
 
-        // Yapılandırma
+        // Kararlı bir model seçimi
+        const modelId = "Llama-3-8B-Instruct-v0.1-q4f16_1-MLC";
         let engine;
-        const modelId = "Gemma-2b-it-q4f16_1-MLC"; // Google'ın yerel modeli
+        let messages = [
+            { role: "system", content: "Senin adın BilalAİ. Çok zeki, yardımsever ve profesyonel bir yapay zekasın. Kullanıcıya her zaman en doğru ve yaratıcı cevapları verirsin." }
+        ];
 
-        async function initAI() {
-            engine = new webllm.MLCEngine();
-            engine.setInitProgressCallback((report) => {
-                modelStatus.innerText = report.text.includes('Finish') ? "Zeka Aktif" : "Yükleniyor...";
-                if(report.progress === 1) {
-                    sendBtn.disabled = false;
-                }
-            });
-            await engine.reload(modelId);
+        async function init() {
+            try {
+                engine = new webllm.MLCEngine();
+                engine.setInitProgressCallback((report) => {
+                    const progress = Math.round(report.progress * 100);
+                    progressBar.style.width = progress + "%";
+                    statusText.innerText = `Yükleniyor: %${progress}`;
+                    
+                    if (report.progress === 1) {
+                        statusText.innerText = "BilalAİ Hazır";
+                        statusText.classList.replace('text-blue-600', 'text-green-600');
+                        sendBtn.disabled = false;
+                    }
+                });
+                await engine.reload(modelId);
+            } catch (err) {
+                statusText.innerText = "Hata: WebGPU Desteklenmiyor";
+                console.error(err);
+            }
         }
 
-        window.handleAction = async () => {
-            const text = promptInput.value.trim();
+        window.sendMessage = async () => {
+            const text = userInput.value.trim();
             if (!text) return;
 
-            if (welcomeScreen) welcomeScreen.remove();
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
 
-            // Kullanıcı Mesajı
-            addMessage(text, 'user');
-            promptInput.value = '';
-            promptInput.style.height = 'auto';
+            // Kullanıcı Mesajı Ekle
+            appendMessage(text, 'user');
+            userInput.value = '';
+            userInput.style.height = 'auto';
 
-            // AI Yanıt Alanı
-            const aiDiv = addMessage("...", 'ai');
-            aiDiv.classList.add('typing-indicator');
+            // Geçmişe ekle (Sidebar)
+            const historyItem = document.createElement('div');
+            historyItem.className = "flex items-center gap-3 p-3 hover:bg-[#e1e6ed] rounded-lg cursor-pointer text-sm truncate";
+            historyItem.innerHTML = `<i class="fa-regular fa-comment text-xs"></i> ${text}`;
+            chatHistory.prepend(historyItem);
+
+            // AI Hazırlık
+            const aiDiv = appendMessage("Düşünüyor...", 'ai');
+            messages.push({ role: "user", content: text });
 
             try {
-                const messages = [{ role: "user", content: text }];
-                const chunks = await engine.chat.completions.create({ messages });
-                const reply = chunks.choices[0].message.content;
-                
-                aiDiv.classList.remove('typing-indicator');
-                aiDiv.innerText = reply;
-                saveToSidebar(text);
+                let fullReply = "";
+                const completion = await engine.chat.completions.create({
+                    messages,
+                    stream: true,
+                });
+
+                for await (const chunk of completion) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    fullReply += content;
+                    aiDiv.innerHTML = `<p class="text-sm leading-relaxed">${fullReply.replace(/\n/g, '<br>')}</p>`;
+                    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                }
+                messages.push({ role: "assistant", content: fullReply });
             } catch (e) {
-                aiDiv.innerText = "Hata: Bellek yetersiz veya GPU desteklenmiyor.";
+                aiDiv.innerText = "Üzgünüm, bir hata oluştu. Lütfen tekrar dene.";
             }
         };
 
-        function addMessage(text, sender) {
+        function appendMessage(text, sender) {
             const wrapper = document.createElement('div');
             wrapper.className = `flex gap-4 ${sender === 'user' ? 'justify-end' : ''}`;
             
-            const icon = sender === 'ai' ? `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-400 shrink-0"></div>` : '';
+            const icon = sender === 'ai' ? 
+                `<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-robot text-xs"></i></div>` : '';
             
             wrapper.innerHTML = `
                 ${icon}
-                <div class="${sender === 'user' ? 'message-user' : 'message-ai flex-1'}">
+                <div class="${sender === 'user' ? 'user-msg' : 'ai-msg flex-1'}">
                     <p class="text-sm leading-relaxed">${text}</p>
                 </div>
             `;
@@ -155,25 +177,15 @@
             return wrapper.querySelector('p');
         }
 
-        function saveToSidebar(text) {
-            const history = document.getElementById('chatHistory');
-            const item = document.createElement('div');
-            item.className = "flex items-center gap-3 p-3 hover:bg-[#e1e6ed] rounded-lg cursor-pointer text-sm truncate";
-            item.innerHTML = `<i class="fa-regular fa-message text-xs"></i> ${text.substring(0, 30)}...`;
-            history.prepend(item);
-        }
-
-        window.newChat = () => location.reload();
-
-        // Klavye kontrolü
-        promptInput.addEventListener('keydown', (e) => {
+        // Enter ile gönder
+        userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleAction();
+                sendMessage();
             }
         });
 
-        initAI();
+        init();
     </script>
 </body>
 </html>
