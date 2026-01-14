@@ -1,113 +1,229 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAI - Yeni Nesil Asistan</title>
-    <style>
-        :root {
-            --bg-color: #131314;
-            --sidebar-color: #1e1f20;
-            --text-color: #e3e3e3;
-            --input-bg: #2d2e2f;
-            --accent-color: #4b90ff;
-            --user-msg-bg: #2d2e2f;
-            --ai-msg-bg: transparent;
-        }
+<meta charset="UTF-8">
+<title>BilalAI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --border: #1f2937;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #3b82f6;
+  --code: #020617;
+}
+* { box-sizing: border-box; font-family: system-ui, sans-serif; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+}
+aside {
+  width: 260px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px;
+}
+aside h1 {
+  font-size: 20px;
+  margin: 0 0 16px;
+}
+aside button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+}
+aside button.active {
+  background: var(--accent);
+}
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+#chat {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+.msg {
+  max-width: 800px;
+  margin-bottom: 16px;
+}
+.user { color: #60a5fa; }
+.ai { color: #a7f3d0; }
+.code {
+  background: var(--code);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 6px;
+  position: relative;
+  margin-top: 8px;
+  white-space: pre;
+  overflow-x: auto;
+}
+.copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+#input {
+  display: flex;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+#input input {
+  flex: 1;
+  padding: 12px;
+  background: #020617;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+#input button {
+  padding: 12px 20px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+canvas {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+<aside>
+  <h1>BilalAI</h1>
+  <button class="active" onclick="setMode('chat')">💬 Sohbet</button>
+  <button onclick="setMode('code')">💻 Kod</button>
+  <button onclick="setMode('image')">🖼 Görsel</button>
+</aside>
 
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            border-right: 1px solid #333;
-        }
+<main>
+  <div id="chat"></div>
+  <div id="input">
+    <input id="prompt" placeholder="BilalAI'ye yaz..." />
+    <button onclick="send()">Gönder</button>
+  </div>
+</main>
 
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #4b90ff, #ff5546);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+<script>
+let mode = "chat";
+const chat = document.getElementById("chat");
 
-        .new-chat-btn {
-            background-color: #2d2e2f;
-            color: var(--text-color);
-            border: 1px solid #444;
-            padding: 10px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            text-align: left;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll("aside button").forEach(b => b.classList.remove("active"));
+  event.target.classList.add("active");
+  addAI("Mod değiştirildi: " + (m === "chat" ? "Sohbet" : m === "code" ? "Kod" : "Görsel"));
+}
 
-        .new-chat-btn:hover {
-            background-color: #3c3d3e;
-        }
+function addUser(text) {
+  const div = document.createElement("div");
+  div.className = "msg user";
+  div.textContent = "Sen: " + text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-        .history {
-            margin-top: 20px;
-            flex-grow: 1;
-            overflow-y: auto;
-            font-size: 14px;
-            color: #999;
-        }
+function addAI(text) {
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  div.textContent = "BilalAI: " + text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-        .history-item {
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 5px;
-        }
+function addCode(code) {
+  const wrap = document.createElement("div");
+  wrap.className = "msg ai";
+  wrap.innerHTML = `BilalAI:<div class="code"><button class="copy">Kopyala</button>${code}</div>`;
+  wrap.querySelector(".copy").onclick = () => {
+    navigator.clipboard.writeText(code);
+    alert("Kopyalandı");
+  };
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-        .history-item:hover {
-            background-color: #2d2e2f;
-        }
+function addImage(prompt) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
 
-        /* Main Chat Area */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(0,0,512,512);
+  ctx.fillStyle = "#3b82f6";
+  ctx.font = "20px sans-serif";
+  ctx.fillText("BilalAI Görsel", 20, 40);
+  ctx.fillStyle = "#e5e7eb";
+  wrapText(ctx, prompt, 20, 80, 470, 26);
 
-        .chat-container {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
+  const wrap = document.createElement("div");
+  wrap.className = "msg ai";
+  wrap.textContent = "BilalAI:";
+  wrap.appendChild(canvas);
+  chat.appendChild(wrap);
+}
 
-        .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+    } else line = testLine;
+  }
+  ctx.fillText(line, x, y);
+}
+
+function send() {
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
+  if (!text) return;
+  addUser(text);
+  input.value = "";
+
+  setTimeout(() => {
+    if (mode === "chat") {
+      addAI("Sorunu anladım. Bu bir BilalAI simülasyonudur. Mantıklı ve tutarlı cevap üretirim.");
+    }
+    if (mode === "code") {
+      addCode(`<!DOCTYPE html>
+<html>
+<head><title>Örnek</title></head>
+<body>
+<h1>BilalAI Kod Örneği</h1>
+</body>
+</html>`);
+    }
+    if (mode === "image") {
+      addImage(text);
+    }
+  }, 400);
+}
+</script>
+
+</body>
+</html>
