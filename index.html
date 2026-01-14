@@ -2,80 +2,249 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilalAİ - Kesintisiz Zeka</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BilalAİ - Profesyonel Asistan</title>
     <style>
-        body { background: #131314; color: white; font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
-        #sidebar { width: 250px; background: #1e1f20; padding: 20px; border-right: 1px solid #333; }
-        #chat-area { flex: 1; display: flex; flex-direction: column; padding: 20px; }
-        #messages { flex: 1; overflow-y: auto; padding-bottom: 20px; }
-        .msg { margin-bottom: 15px; padding: 12px; border-radius: 10px; max-width: 80%; line-height: 1.5; }
-        .user { background: #2c2c2c; align-self: flex-end; margin-left: auto; color: #4b90ff; }
-        .ai { background: #1e1f20; border: 1px solid #333; }
-        pre { background: #000; padding: 10px; border-radius: 5px; color: #a8ff60; overflow-x: auto; }
-        .input-group { display: flex; gap: 10px; background: #1e1f20; padding: 15px; border-radius: 30px; border: 1px solid #444; }
-        input { flex: 1; background: none; border: none; color: white; outline: none; font-size: 16px; }
-        button { background: #4b90ff; border: none; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        img { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #555; }
-        .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #4b90ff; }
+        :root {
+            --bg-color: #131314;
+            --sidebar-bg: #1e1f20;
+            --text-color: #e3e3e3;
+            --accent-color: #8ab4f8;
+            --user-msg-bg: #2c2c2c;
+            --input-bg: #1e1f20;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-right: 1px solid #333;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(to right, #4b90ff, #ff5546);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .new-chat {
+            background: #282a2c;
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .new-chat:hover { background: #3c4043; }
+
+        /* SOHBET ALANI */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chatContainer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 15%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .message {
+            display: flex;
+            gap: 15px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .ai-avatar { background: linear-gradient(135deg, #4b90ff, #ff5546); color: white; }
+        .user-avatar { background: #555; color: white; }
+
+        .content {
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 10px;
+            color: #76ff03;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .gen-img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* INPUT */
+        .input-area {
+            padding: 20px 15% 40px 15%;
+        }
+
+        .input-box {
+            background: var(--input-bg);
+            border: 1px solid #555;
+            border-radius: 30px;
+            display: flex;
+            padding: 5px 20px;
+            align-items: center;
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: var(--accent-color);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        button:hover { color: white; }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <div class="logo">BilalAİ</div>
-    <p style="font-size: 12px; color: #888;">%100 Yerli & Çevrimdışı</p>
-    <hr style="border: 0.5px solid #333;">
-    <p>• Sohbet</p>
-    <p>• Kod Yazma</p>
-    <p>• Görsel Üretme</p>
+<div class="sidebar">
+    <div class="brand">BilalAİ</div>
+    <div class="new-chat" onclick="location.reload()">+ Yeni Sohbet</div>
+    <div style="margin-top: 20px; color: #888; font-size: 14px;">
+        <p>• Çevrimdışı Mod</p>
+        <p>• Sıfır API Kullanımı</p>
+        <p>• Maksimum Kalite</p>
+    </div>
 </div>
 
-<div id="chat-area">
-    <div id="messages">
-        <div class="msg ai">Merhaba! Ben BilalAİ. İnternete veya API'ye ihtiyaç duymadan çalışıyorum. Sana nasıl yardımcı olabilirim?</div>
+<div class="main">
+    <div id="chatContainer">
+        <div class="message">
+            <div class="avatar ai-avatar">B</div>
+            <div class="content">
+                Merhaba, ben <b>BilalAİ</b>. Senin için kod yazabilirim, görsel simüle edebilirim veya sadece sohbet edebiliriz. Ne yapalım?
+            </div>
+        </div>
     </div>
-    
-    <div class="input-group">
-        <input type="text" id="userInput" placeholder="Mesajınızı yazın..." onkeypress="handleEnter(event)">
-        <button onclick="askBilal()">Gönder</button>
+
+    <div class="input-area">
+        <div class="input-box">
+            <input type="text" id="userInput" placeholder="Buraya yazın..." autocomplete="off">
+            <button id="sendBtn">➤</button>
+        </div>
     </div>
 </div>
 
 <script>
-    function handleEnter(e) { if (e.key === 'Enter') askBilal(); }
+    const chatContainer = document.getElementById('chatContainer');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
 
-    function askBilal() {
-        const input = document.getElementById('userInput');
-        const box = document.getElementById('messages');
-        if (!input.value.trim()) return;
+    const brain = {
+        "merhaba": "Selam! Sana nasıl yardımcı olabilirim?",
+        "nasılsın": "Harikayım, işlemcilerim tam güç çalışıyor! Sen nasılsın?",
+        "kod": "İşte senin için profesyonel bir JavaScript örneği:\n\n```javascript\nfunction selamla() {\n  console.log('BilalAİ dünyasına hoş geldin!');\n}\nselamla();\n```",
+        "resim": "Hemen bir görsel tasarlıyorum... 🎨",
+        "default": "Bunu henüz öğrenmedim ama BilalAİ her geçen gün gelişiyor! Bana 'kod yaz' veya 'resim çiz' diyebilirsin."
+    };
 
-        // Kullanıcı Mesajı
-        box.innerHTML += `<div class="msg user"><b>Siz:</b><br>${input.value}</div>`;
-        const val = input.value.toLowerCase();
-        input.value = '';
+    function append(role, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message';
+        
+        const avatarClass = role === 'ai' ? 'ai-avatar' : 'user-avatar';
+        const avatarName = role === 'ai' ? 'B' : 'S';
+        
+        let htmlContent = text;
+        if (text.includes("```")) {
+            htmlContent = text.replace(/```(.*?)\n?(.*?)```/gs, (match, lang, code) => {
+                return `<pre><code>${code.trim()}</code></pre>`;
+            });
+        }
 
-        // BilalAİ Yanıt Mantığı
-        setTimeout(() => {
-            let response = "Anlamadım ama geliştirmem devam ediyor! 'Kod yaz' veya 'Resim çiz' diyebilirsin.";
-            
-            if (val.includes("merhaba") || val.includes("selam")) {
-                response = "Selam! Ben BilalAİ, emrindeyim.";
-            } 
-            else if (val.includes("kod") || val.includes("yazılım")) {
-                response = "İşte senin için bir HTML kodu:<br><pre>&lt;button&gt;Tıkla&lt;/button&gt;</pre>";
-            }
-            else if (val.includes("resim") || val.includes("çiz") || val.includes("görsel")) {
-                const randomId = Math.floor(Math.random() * 1000);
-                response = `İstediğin görseli çizdim:<br><img src="https://picsum.photos/seed/${randomId}/600/400" alt="BilalAI Visual">`;
-            }
-            else if (val.includes("nasılsın")) {
-                response = "Harikayım! Senin için kod yazmaya ve düşünmeye hazırım.";
-            }
-
-            box.innerHTML += `<div class="msg ai"><b>BilalAİ:</b><br>${response}</div>`;
-            box.scrollTop = box.scrollHeight;
-        }, 500);
+        msgDiv.innerHTML = `
+            <div class="avatar ${avatarClass}">${avatarName}</div>
+            <div class="content">${htmlContent}</div>
+        `;
+        
+        chatContainer.appendChild(msgDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
+
+    function process() {
+        const val = userInput.value.trim();
+        if (!val) return;
+
+        append('user', val);
+        userInput.value = '';
+
+        setTimeout(() => {
+            let response = brain.default;
+            const lowerVal = val.toLowerCase();
+
+            if (lowerVal.includes("merhaba")) response = brain.merhaba;
+            else if (lowerVal.includes("nasılsın")) response = brain.nasılsın;
+            else if (lowerVal.includes("kod")) response = brain.kod;
+            else if (lowerVal.includes("resim") || lowerVal.includes("çiz")) {
+                append('ai', brain.resim);
+                const img = document.createElement('img');
+                img.src = "[https://picsum.photos/800/500?random=](https://picsum.photos/800/500?random=)" + Math.random();
+                img.className = "gen-img";
+                const lastMsg = chatContainer.lastElementChild.querySelector('.content');
+                lastMsg.appendChild(img);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                return;
+            }
+
+            append('ai', response);
+        }, 600);
+    }
+
+    sendBtn.addEventListener('click', process);
+    userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') process(); });
 </script>
 
 </body>
