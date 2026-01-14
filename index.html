@@ -3,220 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAİ - Akıllı Kod Asistanı</title>
+    <title>BilalAİ v3 - Kod Ustası</title>
     <style>
         :root {
-            --bg-color: #131314;
-            --sidebar-bg: #1e1f20;
-            --text-color: #e3e3e3;
-            --accent-color: #8ab4f8;
-            --input-bg: #1e1f20;
-            --code-bg: #000000;
+            --bg: #0e0e10; --side: #1c1c1f; --text: #efeff1;
+            --accent: #9147ff; --code-bg: #1a1a1a;
         }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
+        #sidebar { width: 240px; background: var(--side); padding: 20px; border-right: 1px solid #333; }
+        #main { flex: 1; display: flex; flex-direction: column; }
+        #chat { flex: 1; overflow-y: auto; padding: 40px 15%; display: flex; flex-direction: column; gap: 20px; }
+        
+        .msg { display: flex; gap: 15px; animation: slide 0.3s ease; }
+        @keyframes slide { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+        
+        .avatar { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .ai-av { background: var(--accent); color: white; }
+        .user-av { background: #3a3a3d; }
 
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            height: 100vh;
+        /* GELİŞMİŞ KOD KUTUSU */
+        .code-wrapper {
+            position: relative; background: var(--code-bg); border: 1px solid #444;
+            border-radius: 10px; margin: 15px 0; overflow: hidden;
         }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            border-right: 1px solid #333;
+        .code-header {
+            background: #2a2a2a; padding: 8px 15px; font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .brand {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(to right, #4b90ff, #ff5546);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-        }
-
-        /* ANA SOHBET */
-        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        #chatContainer {
-            flex: 1;
-            overflow-y: auto;
-            padding: 40px 15%;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .message { display: flex; gap: 15px; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .avatar {
-            width: 35px; height: 35px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-        .ai-avatar { background: linear-gradient(135deg, #4b90ff, #ff5546); }
-        .user-avatar { background: #555; }
-
-        /* KOD KUTUSU VE KOPYALAMA */
-        .code-container {
-            position: relative;
-            margin: 10px 0;
-            background: var(--code-bg);
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-
-        pre {
-            margin: 0;
-            padding: 20px;
-            color: #76ff03;
-            overflow-x: auto;
-            font-family: 'Consolas', monospace;
-        }
-
         .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: 0.2s;
+            background: var(--accent); border: none; color: white; cursor: pointer;
+            padding: 4px 10px; border-radius: 4px; font-size: 11px;
         }
+        pre { margin: 0; padding: 15px; overflow-x: auto; color: #e0e0e0; font-family: 'Consolas', monospace; }
 
-        .copy-btn:hover { background: #555; }
-        .copy-btn.success { background: #4caf50; }
-
-        .input-area { padding: 20px 15% 40px 15%; }
-        .input-box {
-            background: var(--input-bg);
-            border: 1px solid #555;
-            border-radius: 30px;
-            display: flex;
-            padding: 5px 20px;
+        .input-box { padding: 20px 15%; background: var(--bg); }
+        .inner-input {
+            background: #26262c; border: 2px solid #333; border-radius: 12px;
+            display: flex; padding: 10px 15px;
         }
-
-        input {
-            flex: 1; background: transparent; border: none;
-            color: white; padding: 15px; outline: none;
-        }
-
-        button#sendBtn { background: transparent; border: none; color: var(--accent-color); font-size: 24px; cursor: pointer; }
-
-        .gen-img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+        input { flex: 1; background: none; border: none; color: white; outline: none; font-size: 16px; }
+        #send { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="brand">BilalAİ</div>
-    <div style="color: #888; font-size: 13px;">Kodlama & Görsel Uzmanı</div>
+<div id="sidebar">
+    <h2 style="color:var(--accent)">BilalAİ</h2>
+    <p style="font-size: 12px; opacity: 0.6;">Sınırsız Kod Üretici</p>
 </div>
 
-<div class="main">
-    <div id="chatContainer">
-        <div class="message">
-            <div class="avatar ai-avatar">B</div>
-            <div class="content">Merhaba! Ben <b>BilalAİ</b>. Kod yazabilirim ve kopyalaman için hazır hale getirebilirim. Ne yazmamı istersin?</div>
+<div id="main">
+    <div id="chat">
+        <div class="msg">
+            <div class="avatar ai-av">B</div>
+            <div class="content">Ben BilalAİ. Bana "Python ile hesap makinesi yap" veya "Javascript döngü yaz" gibi komutlar ver, anında kodunu hazırlayayım.</div>
         </div>
     </div>
 
-    <div class="input-area">
-        <div class="input-box">
-            <input type="text" id="userInput" placeholder="Kod yazdır veya resim iste..." autocomplete="off">
-            <button id="sendBtn">➤</button>
+    <div class="input-box">
+        <div class="inner-input">
+            <input type="text" id="userInput" placeholder="Hangi kodu yazmamı istersin?">
+            <button id="send">➤</button>
         </div>
     </div>
 </div>
 
 <script>
-    const chatContainer = document.getElementById('chatContainer');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('userInput');
+    const send = document.getElementById('send');
 
-    const responses = {
-        "kod": "İşte senin için hazırladığım Python kodu:\n\n```python\n# BilalAI tarafından yazıldı\nprint('Merhaba Dünya!')\n\ndef hesapla(x, y):\n    return x * y\n\nprint(hesapla(10, 5))\n```",
-        "html": "İşte basit bir HTML yapısı:\n\n```html\n<div class='bilal-ai'>\n  <h1>BilalAI Web Tasarım</h1>\n  <p>Bu kod kopyalanabilir!</p>\n</div>\n```",
-        "js": "JavaScript döngü örneği:\n\n```javascript\nfor(let i=0; i<5; i++) {\n  console.log('BilalAI çalışıyor: ' + i);\n}\n```"
-    };
+    // KOD ÜRETME MOTORU (BILALAI ENGINE)
+    function generateCode(command) {
+        const cmd = command.toLowerCase();
+        let code = "";
+        let lang = "python";
 
-    function copyToClipboard(btn, text) {
-        navigator.clipboard.writeText(text).then(() => {
-            btn.innerText = "Kopyalandı!";
-            btn.classList.add('success');
-            setTimeout(() => {
-                btn.innerText = "Kopyala";
-                btn.classList.remove('success');
-            }, 2000);
-        });
-    }
-
-    function appendMessage(role, text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message';
-        
-        let processedText = text;
-        if (text.includes("```")) {
-            // Kod bloklarını düzenle ve kopyala butonu ekle
-            processedText = text.replace(/```(?:\w+)?\n([\s\S]*?)```/g, (match, code) => {
-                const uniqueId = 'code-' + Math.random().toString(36).substr(2, 9);
-                return `
-                    <div class="code-container">
-                        <button class="copy-btn" onclick="copyToClipboard(this, \`${code.trim().replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">Kopyala</button>
-                        <pre id="${uniqueId}"><code>${code.trim()}</code></pre>
-                    </div>`;
-            });
+        if(cmd.includes("python")) {
+            lang = "python";
+            if(cmd.includes("hesap")) code = "def topla(a,b): return a+b\nprint(topla(10,5))";
+            else if(cmd.includes("liste")) code = "liste = ['elma', 'armut']\nfor x in liste:\n    print(x)";
+            else code = "# BilalAI Python Kod Sistemi\nprint('İstediğin kod yapısı hazırlandı.')\n# Detaylı parametreler eklenebilir.";
+        } 
+        else if(cmd.includes("html") || cmd.includes("web")) {
+            lang = "html";
+            code = "<!DOCTYPE html>\n<html>\n<body>\n  <h1>BilalAI Tasarımı</h1>\n</body>\n</html>";
+        }
+        else if(cmd.includes("js") || cmd.includes("javascript")) {
+            lang = "javascript";
+            code = "const selamlama = () => {\n  console.log('BilalAI JS Motoru aktif');\n};\nselamlama();";
+        }
+        else {
+            code = "// BilalAI Genel Kod Şablonu\nfunction start() {\n  return 'Kod oluşturuldu';\n}";
         }
 
-        msgDiv.innerHTML = `
-            <div class="avatar ${role === 'ai' ? 'ai-avatar' : 'user-avatar'}">${role === 'ai' ? 'B' : 'S'}</div>
-            <div class="content">${processedText.replace(/\n/g, '<br>')}</div>
-        `;
-        
-        chatContainer.appendChild(msgDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return { code, lang };
     }
 
-    function handleChat() {
-        const val = userInput.value.trim();
-        if (!val) return;
+    function copyCode(btn, text) {
+        navigator.clipboard.writeText(text);
+        btn.innerText = "Kopyalandı!";
+        setTimeout(() => btn.innerText = "Kopyala", 2000);
+    }
 
-        appendMessage('user', val);
-        userInput.value = '';
+    function addMessage(role, text, isCode = false) {
+        const div = document.createElement('div');
+        div.className = 'msg';
+        
+        let contentHTML = `<div>${text}</div>`;
+        
+        if(isCode) {
+            const result = generateCode(text);
+            contentHTML = `
+                <div style="width:100%">
+                    İşte istediğin <b>${result.lang}</b> kodu:
+                    <div class="code-wrapper">
+                        <div class="code-header">
+                            <span>${result.lang.toUpperCase()}</span>
+                            <button class="copy-btn" onclick="copyCode(this, \`${result.code}\`)">Kopyala</button>
+                        </div>
+                        <pre><code>${result.code}</code></pre>
+                    </div>
+                </div>`;
+        }
+
+        div.innerHTML = `<div class="avatar ${role}-av">${role === 'ai' ? 'B' : 'S'}</div>
+                         <div class="content">${contentHTML}</div>`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function handle() {
+        const val = input.value;
+        if(!val) return;
+        addMessage('user', val);
+        input.value = '';
 
         setTimeout(() => {
-            let reply = "Harika bir soru! Eğer kod yazmamı istersen 'kod yaz' demen yeterli.";
-            const low = val.toLowerCase();
-
-            if (low.includes("kod") || low.includes("python")) reply = responses.kod;
-            else if (low.includes("html")) reply = responses.html;
-            else if (low.includes("js") || low.includes("javascript")) reply = responses.js;
-            else if (low.includes("resim") || low.includes("çiz")) {
-                appendMessage('ai', "Hemen çiziyorum...");
-                const img = document.createElement('img');
-                img.src = "[https://picsum.photos/800/450?random=](https://picsum.photos/800/450?random=)" + Math.random();
-                img.className = "gen-img";
-                chatContainer.lastElementChild.querySelector('.content').appendChild(img);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                return;
+            if(val.toLowerCase().includes("kod") || val.toLowerCase().includes("yaz") || val.toLowerCase().includes("yap")) {
+                addMessage('ai', val, true);
+            } else {
+                addMessage('ai', "Seni anlıyorum. Eğer kod yazdırmak istersen dil belirterek (Python, JS vb.) sorabilirsin.");
             }
-
-            appendMessage('ai', reply);
         }, 600);
     }
 
-    sendBtn.addEventListener('click', handleChat);
-    userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleChat(); });
+    send.onclick = handle;
+    input.onkeypress = (e) => { if(e.key === 'Enter') handle(); };
 </script>
 
 </body>
