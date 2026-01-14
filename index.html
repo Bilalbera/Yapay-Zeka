@@ -4,224 +4,207 @@
 <meta charset="UTF-8">
 <title>BilalAI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-:root {
-  --bg: #0f172a;
-  --panel: #111827;
-  --border: #1f2937;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --accent: #3b82f6;
-  --code: #020617;
+:root{
+  --bg:#0f172a;
+  --panel:#111827;
+  --border:#1f2937;
+  --text:#e5e7eb;
+  --accent:#3b82f6;
+  --code:#020617;
 }
-* { box-sizing: border-box; font-family: system-ui, sans-serif; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  display: flex;
+*{box-sizing:border-box;font-family:system-ui}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;
 }
-aside {
-  width: 260px;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
-  padding: 16px;
+aside{
+  width:260px;
+  background:var(--panel);
+  border-right:1px solid var(--border);
+  padding:16px;
 }
-aside h1 {
-  font-size: 20px;
-  margin: 0 0 16px;
+aside h1{margin:0 0 16px;font-size:20px}
+aside button{
+  width:100%;
+  padding:10px;
+  margin-bottom:8px;
+  background:none;
+  border:1px solid var(--border);
+  color:var(--text);
+  cursor:pointer;
 }
-aside button {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 8px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  cursor: pointer;
+aside button.active{background:var(--accent)}
+main{flex:1;display:flex;flex-direction:column}
+#chat{flex:1;padding:20px;overflow-y:auto}
+.msg{max-width:900px;margin-bottom:14px}
+.user{color:#60a5fa}
+.ai{color:#a7f3d0}
+.code{
+  background:var(--code);
+  border:1px solid var(--border);
+  padding:12px;
+  border-radius:6px;
+  position:relative;
+  white-space:pre;
+  overflow-x:auto;
+  margin-top:6px;
 }
-aside button.active {
-  background: var(--accent);
+.copy{
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  font-size:12px;
+  padding:4px 8px;
+  cursor:pointer;
 }
-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+#input{
+  display:flex;
+  padding:16px;
+  border-top:1px solid var(--border);
 }
-#chat {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+#input input{
+  flex:1;
+  padding:12px;
+  background:#020617;
+  border:1px solid var(--border);
+  color:var(--text);
 }
-.msg {
-  max-width: 800px;
-  margin-bottom: 16px;
+#input button{
+  padding:12px 20px;
+  background:var(--accent);
+  border:none;
+  color:#fff;
+  cursor:pointer;
 }
-.user { color: #60a5fa; }
-.ai { color: #a7f3d0; }
-.code {
-  background: var(--code);
-  border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: 6px;
-  position: relative;
-  margin-top: 8px;
-  white-space: pre;
-  overflow-x: auto;
-}
-.copy {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-#input {
-  display: flex;
-  padding: 16px;
-  border-top: 1px solid var(--border);
-}
-#input input {
-  flex: 1;
-  padding: 12px;
-  background: #020617;
-  border: 1px solid var(--border);
-  color: var(--text);
-}
-#input button {
-  padding: 12px 20px;
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-}
-canvas {
-  margin-top: 10px;
-  border: 1px solid var(--border);
-}
+canvas{margin-top:8px;border:1px solid var(--border)}
 </style>
 </head>
+
 <body>
 
 <aside>
   <h1>BilalAI</h1>
-  <button class="active" onclick="setMode('chat')">💬 Sohbet</button>
-  <button onclick="setMode('code')">💻 Kod</button>
-  <button onclick="setMode('image')">🖼 Görsel</button>
+  <button class="active" data-mode="chat">💬 Sohbet</button>
+  <button data-mode="code">💻 Kod</button>
+  <button data-mode="image">🖼 Görsel</button>
 </aside>
 
 <main>
   <div id="chat"></div>
   <div id="input">
     <input id="prompt" placeholder="BilalAI'ye yaz..." />
-    <button onclick="send()">Gönder</button>
+    <button id="send">Gönder</button>
   </div>
 </main>
 
 <script>
-let mode = "chat";
 const chat = document.getElementById("chat");
+const input = document.getElementById("prompt");
+let mode = "chat";
 
-function setMode(m) {
-  mode = m;
-  document.querySelectorAll("aside button").forEach(b => b.classList.remove("active"));
-  event.target.classList.add("active");
-  addAI("Mod değiştirildi: " + (m === "chat" ? "Sohbet" : m === "code" ? "Kod" : "Görsel"));
+/* ---------- LOCAL STORAGE ---------- */
+const STORAGE_KEY = "bilalai_chat";
+
+function saveChat() {
+  localStorage.setItem(STORAGE_KEY, chat.innerHTML);
 }
-
-function addUser(text) {
-  const div = document.createElement("div");
-  div.className = "msg user";
-  div.textContent = "Sen: " + text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+function loadChat() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) chat.innerHTML = saved;
 }
+loadChat();
 
-function addAI(text) {
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.textContent = "BilalAI: " + text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function addCode(code) {
-  const wrap = document.createElement("div");
-  wrap.className = "msg ai";
-  wrap.innerHTML = `BilalAI:<div class="code"><button class="copy">Kopyala</button>${code}</div>`;
-  wrap.querySelector(".copy").onclick = () => {
-    navigator.clipboard.writeText(code);
-    alert("Kopyalandı");
+/* ---------- MODE ---------- */
+document.querySelectorAll("aside button").forEach(btn=>{
+  btn.onclick = () => {
+    document.querySelectorAll("aside button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    mode = btn.dataset.mode;
+    addAI("Mod değiştirildi: " + mode.toUpperCase());
   };
-  chat.appendChild(wrap);
-  chat.scrollTop = chat.scrollHeight;
+});
+
+/* ---------- MESSAGE HELPERS ---------- */
+function addUser(text){
+  const d=document.createElement("div");
+  d.className="msg user";
+  d.textContent="Sen: "+text;
+  chat.appendChild(d);
+  saveChat(); scroll();
 }
-
-function addImage(prompt) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = "#020617";
-  ctx.fillRect(0,0,512,512);
-  ctx.fillStyle = "#3b82f6";
-  ctx.font = "20px sans-serif";
-  ctx.fillText("BilalAI Görsel", 20, 40);
-  ctx.fillStyle = "#e5e7eb";
-  wrapText(ctx, prompt, 20, 80, 470, 26);
-
-  const wrap = document.createElement("div");
-  wrap.className = "msg ai";
-  wrap.textContent = "BilalAI:";
-  wrap.appendChild(canvas);
-  chat.appendChild(wrap);
+function addAI(text){
+  const d=document.createElement("div");
+  d.className="msg ai";
+  d.textContent="BilalAI: "+text;
+  chat.appendChild(d);
+  saveChat(); scroll();
 }
-
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = text.split(" ");
-  let line = "";
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
-      line = words[n] + " ";
-      y += lineHeight;
-    } else line = testLine;
-  }
-  ctx.fillText(line, x, y);
+function addCode(code){
+  const d=document.createElement("div");
+  d.className="msg ai";
+  d.innerHTML=`BilalAI:
+  <div class="code">
+    <button class="copy">Kopyala</button>${code}
+  </div>`;
+  d.querySelector(".copy").onclick=()=>navigator.clipboard.writeText(code);
+  chat.appendChild(d);
+  saveChat(); scroll();
 }
+function addImage(text){
+  const c=document.createElement("canvas");
+  c.width=512;c.height=512;
+  const x=c.getContext("2d");
+  x.fillStyle="#020617";x.fillRect(0,0,512,512);
+  x.fillStyle="#3b82f6";x.font="20px sans-serif";
+  x.fillText("BilalAI Görsel",20,40);
+  x.fillStyle="#e5e7eb";wrap(x,text,20,80,470,26);
 
-function send() {
-  const input = document.getElementById("prompt");
-  const text = input.value.trim();
-  if (!text) return;
+  const d=document.createElement("div");
+  d.className="msg ai";
+  d.textContent="BilalAI:";
+  d.appendChild(c);
+  chat.appendChild(d);
+  saveChat(); scroll();
+}
+function wrap(ctx,t,x,y,w,h){
+  let words=t.split(" "),line="";
+  words.forEach(word=>{
+    let test=line+word+" ";
+    if(ctx.measureText(test).width>w){
+      ctx.fillText(line,x,y);line=word+" ";y+=h;
+    } else line=test;
+  });
+  ctx.fillText(line,x,y);
+}
+function scroll(){chat.scrollTop=chat.scrollHeight}
+
+/* ---------- SEND ---------- */
+document.getElementById("send").onclick = send;
+input.addEventListener("keydown",e=>e.key==="Enter"&&send());
+
+function send(){
+  const text=input.value.trim();
+  if(!text) return;
   addUser(text);
-  input.value = "";
-
-  setTimeout(() => {
-    if (mode === "chat") {
-      addAI("Sorunu anladım. Bu bir BilalAI simülasyonudur. Mantıklı ve tutarlı cevap üretirim.");
-    }
-    if (mode === "code") {
-      addCode(`<!DOCTYPE html>
+  input.value="";
+  setTimeout(()=>{
+    if(mode==="chat") addAI("Sorunu anladım. BilalAI tutarlı ve hatasız cevap üretir.");
+    if(mode==="code") addCode(`<!DOCTYPE html>
 <html>
-<head><title>Örnek</title></head>
 <body>
-<h1>BilalAI Kod Örneği</h1>
+<h1>BilalAI Kod</h1>
 </body>
 </html>`);
-    }
-    if (mode === "image") {
-      addImage(text);
-    }
-  }, 400);
+    if(mode==="image") addImage(text);
+  },300);
 }
 </script>
 
