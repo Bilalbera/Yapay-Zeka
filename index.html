@@ -3,66 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilalAİ v3 - Kod Ustası</title>
+    <title>BilalAİ - Gerçek Zeka</title>
     <style>
-        :root {
-            --bg: #0e0e10; --side: #1c1c1f; --text: #efeff1;
-            --accent: #9147ff; --code-bg: #1a1a1a;
-        }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
-        #sidebar { width: 240px; background: var(--side); padding: 20px; border-right: 1px solid #333; }
-        #main { flex: 1; display: flex; flex-direction: column; }
-        #chat { flex: 1; overflow-y: auto; padding: 40px 15%; display: flex; flex-direction: column; gap: 20px; }
+        :root { --bg: #0b0b0d; --chat-bg: #131314; --accent: #4b90ff; --text: #e3e3e3; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; height: 100vh; }
+        #sidebar { width: 280px; background: #1e1f20; padding: 25px; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #chat { flex: 1; overflow-y: auto; padding: 40px 10%; scroll-behavior: smooth; }
         
-        .msg { display: flex; gap: 15px; animation: slide 0.3s ease; }
-        @keyframes slide { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+        .msg { display: flex; gap: 20px; margin-bottom: 30px; animation: fadeIn 0.4s ease; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .ai-av { background: linear-gradient(135deg, #4b90ff, #ff5546); }
+        .user-av { background: #555; }
         
-        .avatar { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .ai-av { background: var(--accent); color: white; }
-        .user-av { background: #3a3a3d; }
+        .content { line-height: 1.6; font-size: 16px; width: 100%; }
+        
+        /* KOD BLOĞU */
+        .code-box { background: #000; border-radius: 12px; margin: 15px 0; border: 1px solid #444; position: relative; }
+        .code-header { background: #2b2d2e; padding: 10px 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .copy-btn { background: #4b90ff; border: none; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        pre { margin: 0; padding: 20px; overflow-x: auto; color: #a8ff60; font-family: 'Fira Code', monospace; }
 
-        /* GELİŞMİŞ KOD KUTUSU */
-        .code-wrapper {
-            position: relative; background: var(--code-bg); border: 1px solid #444;
-            border-radius: 10px; margin: 15px 0; overflow: hidden;
-        }
-        .code-header {
-            background: #2a2a2a; padding: 8px 15px; font-size: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .copy-btn {
-            background: var(--accent); border: none; color: white; cursor: pointer;
-            padding: 4px 10px; border-radius: 4px; font-size: 11px;
-        }
-        pre { margin: 0; padding: 15px; overflow-x: auto; color: #e0e0e0; font-family: 'Consolas', monospace; }
+        /* GÖRSEL */
+        .ai-img { max-width: 100%; border-radius: 15px; margin-top: 15px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        .input-box { padding: 20px 15%; background: var(--bg); }
-        .inner-input {
-            background: #26262c; border: 2px solid #333; border-radius: 12px;
-            display: flex; padding: 10px 15px;
-        }
-        input { flex: 1; background: none; border: none; color: white; outline: none; font-size: 16px; }
-        #send { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 20px; }
+        .input-container { padding: 30px 10%; background: var(--bg); }
+        .input-wrapper { background: #1e1f20; border-radius: 30px; display: flex; padding: 10px 25px; border: 1px solid #444; transition: 0.3s; }
+        .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(75,144,255,0.2); }
+        input { flex: 1; background: none; border: none; color: white; padding: 15px; outline: none; font-size: 16px; }
+        #send { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 26px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
-    <h2 style="color:var(--accent)">BilalAİ</h2>
-    <p style="font-size: 12px; opacity: 0.6;">Sınırsız Kod Üretici</p>
+    <h1 style="background: linear-gradient(to right, #4b90ff, #ff5546); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">BilalAİ v4</h1>
+    <p style="font-size: 14px; opacity: 0.7;">Gerçek Zamanlı İşlem Motoru</p>
+    <div style="margin-top: auto; font-size: 12px; color: #666;">© 2026 BilalAİ Labs</div>
 </div>
 
 <div id="main">
     <div id="chat">
         <div class="msg">
             <div class="avatar ai-av">B</div>
-            <div class="content">Ben BilalAİ. Bana "Python ile hesap makinesi yap" veya "Javascript döngü yaz" gibi komutlar ver, anında kodunu hazırlayayım.</div>
+            <div class="content">Sistemler aktif. Ben BilalAİ. <br>Bana herhangi bir görev ver: Kod yazdır, analiz yaptır veya hayalindeki bir görseli anlat. Seni dinliyorum.</div>
         </div>
     </div>
 
-    <div class="input-box">
-        <div class="inner-input">
-            <input type="text" id="userInput" placeholder="Hangi kodu yazmamı istersin?">
+    <div class="input-container">
+        <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Mesajınızı buraya yazın..." autocomplete="off">
             <button id="send">➤</button>
         </div>
     </div>
@@ -73,83 +65,81 @@
     const input = document.getElementById('userInput');
     const send = document.getElementById('send');
 
-    // KOD ÜRETME MOTORU (BILALAI ENGINE)
-    function generateCode(command) {
-        const cmd = command.toLowerCase();
-        let code = "";
-        let lang = "python";
+    // GELİŞMİŞ ZEKA MOTORU
+    const BilalEngine = {
+        analyze(text) {
+            const t = text.toLowerCase();
+            if (t.includes("kod") || t.includes("yazılım") || t.includes("program") || t.includes("yaz")) return "CODE";
+            if (t.includes("resim") || t.includes("çiz") || t.includes("görsel") || t.includes("fotoğraf")) return "IMAGE";
+            return "CHAT";
+        },
+        
+        generateCode(userPrompt) {
+            const p = userPrompt.toLowerCase();
+            let lang = "javascript";
+            let code = "";
 
-        if(cmd.includes("python")) {
-            lang = "python";
-            if(cmd.includes("hesap")) code = "def topla(a,b): return a+b\nprint(topla(10,5))";
-            else if(cmd.includes("liste")) code = "liste = ['elma', 'armut']\nfor x in liste:\n    print(x)";
-            else code = "# BilalAI Python Kod Sistemi\nprint('İstediğin kod yapısı hazırlandı.')\n# Detaylı parametreler eklenebilir.";
-        } 
-        else if(cmd.includes("html") || cmd.includes("web")) {
-            lang = "html";
-            code = "<!DOCTYPE html>\n<html>\n<body>\n  <h1>BilalAI Tasarımı</h1>\n</body>\n</html>";
+            if (p.includes("python")) {
+                lang = "python";
+                code = `def bilal_ai_robot():\n    print("BilalAİ Python Modu Aktif")\n    kullanici = "${userPrompt.split(' ').pop()}"\n    return f"Girdi analizi: {kullanici}"\n\nprint(bilal_ai_robot())`;
+            } else if (p.includes("html") || p.includes("web")) {
+                lang = "html";
+                code = `<!DOCTYPE html>\n<div class="bilal-card">\n   <h2>BilalAİ Tarafından Oluşturuldu</h2>\n   <p>İstek: ${userPrompt}</p>\n</div>`;
+            } else {
+                code = `// BilalAİ Algoritması\nconst data = ["Zeka", "Kod", "Hız"];\nconsole.log("Sistem durumu: %100");\n// İstek içeriği: ${userPrompt}`;
+            }
+            return { lang, code };
         }
-        else if(cmd.includes("js") || cmd.includes("javascript")) {
-            lang = "javascript";
-            code = "const selamlama = () => {\n  console.log('BilalAI JS Motoru aktif');\n};\nselamlama();";
-        }
-        else {
-            code = "// BilalAI Genel Kod Şablonu\nfunction start() {\n  return 'Kod oluşturuldu';\n}";
-        }
+    };
 
-        return { code, lang };
-    }
-
-    function copyCode(btn, text) {
+    function copyToClipboard(text, btn) {
         navigator.clipboard.writeText(text);
         btn.innerText = "Kopyalandı!";
         setTimeout(() => btn.innerText = "Kopyala", 2000);
     }
 
-    function addMessage(role, text, isCode = false) {
+    function addMessage(type, data) {
         const div = document.createElement('div');
         div.className = 'msg';
+        const avatar = type === 'ai' ? '<div class="avatar ai-av">B</div>' : '<div class="avatar user-av">S</div>';
         
-        let contentHTML = `<div>${text}</div>`;
+        let body = `<div class="content">${data}</div>`;
         
-        if(isCode) {
-            const result = generateCode(text);
-            contentHTML = `
-                <div style="width:100%">
-                    İşte istediğin <b>${result.lang}</b> kodu:
-                    <div class="code-wrapper">
-                        <div class="code-header">
-                            <span>${result.lang.toUpperCase()}</span>
-                            <button class="copy-btn" onclick="copyCode(this, \`${result.code}\`)">Kopyala</button>
-                        </div>
-                        <pre><code>${result.code}</code></pre>
-                    </div>
-                </div>`;
-        }
-
-        div.innerHTML = `<div class="avatar ${role}-av">${role === 'ai' ? 'B' : 'S'}</div>
-                         <div class="content">${contentHTML}</div>`;
+        div.innerHTML = avatar + body;
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
     }
 
-    function handle() {
-        const val = input.value;
-        if(!val) return;
-        addMessage('user', val);
+    function handleAction() {
+        const prompt = input.value.trim();
+        if (!prompt) return;
+
+        addMessage('user', prompt);
         input.value = '';
 
         setTimeout(() => {
-            if(val.toLowerCase().includes("kod") || val.toLowerCase().includes("yaz") || val.toLowerCase().includes("yap")) {
-                addMessage('ai', val, true);
+            const mode = BilalEngine.analyze(prompt);
+
+            if (mode === "CODE") {
+                const res = BilalEngine.generateCode(prompt);
+                const codeHtml = `
+                    İşte senin için yazdığım özel kod yapısı:
+                    <div class="code-box">
+                        <div class="code-header"><span>${res.lang.toUpperCase()}</span> <button class="copy-btn" onclick="copyToClipboard(\`${res.code}\`, this)">Kopyala</button></div>
+                        <pre><code>${res.code}</code></pre>
+                    </div>`;
+                addMessage('ai', codeHtml);
+            } else if (mode === "IMAGE") {
+                const imgUrl = `https://picsum.photos/seed/${Math.random()}/1080/720`;
+                addMessage('ai', `İstediğin görseli nöral ağlarımda oluşturdum: <br> <img src="${imgUrl}" class="ai-img">`);
             } else {
-                addMessage('ai', "Seni anlıyorum. Eğer kod yazdırmak istersen dil belirterek (Python, JS vb.) sorabilirsin.");
+                addMessage('ai', `Seni çok iyi anlıyorum. İstediğin "${prompt}" konusu üzerine derinlemesine düşündüm. BilalAİ olarak sana en kaliteli yanıtı vermek için buradayım. Başka bir şey yapalım mı?`);
             }
-        }, 600);
+        }, 800);
     }
 
-    send.onclick = handle;
-    input.onkeypress = (e) => { if(e.key === 'Enter') handle(); };
+    send.onclick = handleAction;
+    input.onkeyup = (e) => { if (e.key === "Enter") handleAction(); };
 </script>
 
 </body>
