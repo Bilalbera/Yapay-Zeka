@@ -1,189 +1,146 @@
-import sys
-import json
-import os
-import requests
-import psutil
-import threading
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QHBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel)
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPropertyAnimation, QRect
-from PyQt6.QtGui import QColor, QPainter, QBrush
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilal AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #131314; color: #e3e3e3; }
+        .sidebar { background-color: #1e1f20; }
+        .chat-container { max-width: 800px; margin: 0 auto; }
+        .user-msg { background-color: #374151; border-radius: 18px; padding: 10px 16px; margin-left: auto; max-width: 80%; }
+        .ai-msg { margin-right: auto; max-width: 90%; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
 
-# --- SKILL DOSYASI (Sistem Yetenekleri) ---
-class BilalSkills:
-    @staticmethod
-    def get_battery():
-        battery = psutil.sensors_battery()
-        return f"Pil Seviyesi: %{battery.percent}" if battery else "Pil bilgisi alınamadı."
-
-    @staticmethod
-    def get_system_time():
-        from datetime import datetime
-        return f"Şu anki saat: {datetime.now().strftime('%H:%M:%S')}"
-
-    @staticmethod
-    def handle_file(action, filename, content=None):
-        if action == "save":
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(content)
-            return f"Dosya başarıyla kaydedildi: {filename}"
-        return "Geçersiz dosya işlemi."
-
-# --- ANA UYGULAMA ---
-class BilalAI(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.api_key_file = "api_key.json"
-        self.api_key = self.load_api_key()
-        self.init_ui()
+    <aside class="sidebar w-64 flex flex-col p-4 hidden md:flex">
+        <button onclick="newChat()" class="flex items-center gap-3 bg-[#282a2c] hover:bg-[#374151] transition p-3 rounded-full mb-8">
+            <i data-lucide="plus"></i>
+            <span class="font-medium">Yeni Sohbet</span>
+        </button>
         
-        # Ses simülasyonu için değişken (Yapay zeka konuşurken titreşim sağlar)
-        self.voice_amplitude = 0
-        self.is_speaking = False
-        
-    def load_api_key(self):
-        if os.path.exists(self.api_key_file):
-            with open(self.api_key_file, 'r') as f:
-                return json.load(f).get("key")
-        return None
+        <div class="flex-1 overflow-y-auto custom-scrollbar">
+            <p class="text-xs font-semibold text-gray-500 mb-4 px-2 uppercase tracking-wider">Sohbetler</p>
+            <div id="chat-list" class="space-y-2">
+                </div>
+        </div>
+    </aside>
 
-    def save_api_key(self, key):
-        with open(self.api_key_file, 'w') as f:
-            json.dump({"key": key}, f)
-        self.api_key = key
+    <main class="flex-1 flex flex-col relative">
+        <header class="p-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-semibold">Bilal AI</span>
+                <select id="model-select" class="bg-transparent border border-gray-600 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <option value="standart" class="bg-[#1e1f20]">Standart (Hızlı)</option>
+                    <option value="pro" class="bg-[#1e1f20]">Pro (Zeki)</option>
+                </select>
+            </div>
+            <div class="w-8 h-8 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center font-bold">B</div>
+        </header>
 
-    def init_ui(self):
-        self.setWindowTitle("BilalAI - Advanced OS Assistant")
-        self.setFixedSize(500, 700)
-        self.setStyleSheet("background-color: #0B0E14; color: white;") # Uzay Siyahı
+        <div id="chat-window" class="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center">
+                <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">Size nasıl yardımcı olabilirim?</h1>
+                <p class="text-gray-400">Bilal AI ile kod yazabilir, soru sorabilir veya beyin fırtınası yapabilirsiniz.</p>
+            </div>
+        </div>
 
-        layout = QVBoxLayout()
+        <div class="p-4 bg-[#131314]">
+            <div class="chat-container relative">
+                <textarea id="user-input" rows="1" placeholder="Buraya yazın..." class="w-full bg-[#1e1f20] border-none rounded-2xl p-4 pr-12 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none overflow-hidden" oninput="autoResize(this)"></textarea>
+                <button onclick="sendMessage()" class="absolute right-3 bottom-3 p-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition">
+                    <i data-lucide="send-horizontal" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-center text-[10px] text-gray-500 mt-2">Bilal AI hata yapabilir. Önemli bilgileri kontrol edin.</p>
+        </div>
+    </main>
 
-        # 1. Görsel Ses Efekti Alanı (Daire ve Tanecikler)
-        self.visualizer = VoiceVisualizer(self)
-        layout.addWidget(self.visualizer)
+    <script>
+        // İkonları başlat
+        lucide.createIcons();
 
-        # 2. Sohbet Geçmişi
-        self.chat_area = QTextEdit()
-        self.chat_area.setReadOnly(True)
-        self.chat_area.setStyleSheet("background-color: #161B22; border: none; border-radius: 10px; padding: 10px; color: #E6EDF3;")
-        layout.addWidget(self.chat_area)
+        let chats = [];
+        let currentChatId = null;
 
-        # 3. Giriş Alanı
-        input_layout = QHBoxLayout()
-        self.user_input = QLineEdit()
-        self.user_input.setPlaceholderText("BilalAI'ye bir şeyler sor...")
-        self.user_input.setStyleSheet("background-color: #161B22; border: 1px solid #30363D; border-radius: 5px; padding: 8px;")
-        self.user_input.returnPressed.connect(self.process_chat)
-        
-        send_btn = QPushButton("Gönder")
-        send_btn.setStyleSheet("background-color: #238636; color: white; border-radius: 5px; padding: 8px;")
-        send_btn.clicked.connect(self.process_chat)
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
 
-        input_layout.addWidget(self.user_input)
-        input_layout.addWidget(send_btn)
-        layout.addLayout(input_layout)
+        function newChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = `
+                <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center">
+                    <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">Size nasıl yardımcı olabilirim?</h1>
+                </div>`;
+            currentChatId = Date.now();
+        }
 
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatWindow = document.getElementById('chat-window');
+            const model = document.getElementById('model-select').value;
+            const message = input.value.trim();
 
-        # API Anahtarı yoksa sor
-        if not self.api_key:
-            self.chat_area.append("Sistem: Lütfen OpenRouter API anahtarınızı girin.")
+            if (!message) return;
 
-    def process_chat(self):
-        text = self.user_input.text().strip()
-        if not text: return
-        
-        if not self.api_key:
-            self.save_api_key(text)
-            self.chat_area.append("Sistem: API Anahtarı kaydedildi. Artık konuşabiliriz!")
-            self.user_input.clear()
-            return
+            // Karşılama ekranını kaldır
+            if(document.getElementById('welcome-screen')) {
+                document.getElementById('welcome-screen').remove();
+                addChatToSidebar(message);
+            }
 
-        self.chat_area.append(f"Siz: {text}")
-        self.user_input.clear()
-        
-        # Skill Kontrolü (Basit komut ayrıştırma)
-        if "saat" in text.lower():
-            res = BilalSkills.get_system_time()
-            self.ai_respond(res)
-        elif "pil" in text.lower():
-            res = BilalSkills.get_battery()
-            self.ai_respond(res)
-        else:
-            threading.Thread(target=self.get_ai_response, args=(text,)).start()
+            // Kullanıcı mesajını ekle
+            chatWindow.innerHTML += `
+                <div class="flex flex-col items-end w-full">
+                    <div class="user-msg text-sm">${message}</div>
+                </div>`;
 
-    def get_ai_response(self, prompt):
-        try:
-            response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                data=json.dumps({
-                    "model": "openrouter/free", 
-                    "messages": [{"role": "user", "content": prompt}]
-                })
-            )
-            data = response.json()
-            reply = data['choices'][0]['message']['content']
-            self.ai_respond(reply)
-        except Exception as e:
-            self.ai_respond("Hata: API bağlantısı kurulamadı.")
+            input.value = '';
+            input.style.height = 'auto';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
-    def ai_respond(self, text):
-        self.chat_area.append(f"BilalAI: {text}")
-        # Ses görselleştirmesini tetikle
-        self.start_voice_animation()
+            // AI Yanıtı (Simülasyon)
+            setTimeout(() => {
+                const response = getAIResponse(message, model);
+                chatWindow.innerHTML += `
+                    <div class="ai-msg flex gap-4 p-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center shrink-0">
+                            <i data-lucide="bot" class="w-5 h-5 text-blue-300"></i>
+                        </div>
+                        <div class="pt-1 text-sm leading-relaxed">
+                            <p class="font-bold mb-1">${model.toUpperCase()} MODEL</p>
+                            ${response}
+                        </div>
+                    </div>`;
+                lucide.createIcons();
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 800);
+        }
 
-    def start_voice_animation(self):
-        self.is_speaking = True
-        QTimer.singleShot(3000, lambda: setattr(self, 'is_speaking', False))
+        function getAIResponse(input, model) {
+            if (model === "pro") {
+                return "Pro Model Analizi: '" + input + "' konusunu derinlemesine inceledim. Karmaşık mantık kullanarak size en optimize çözümü sunuyorum. Bu model, Standart modele göre %40 daha fazla veriye erişir.";
+            } else {
+                return "Hızlı Yanıt: '" + input + "' sorunuza standart işlemciyle anında cevap veriyorum!";
+            }
+        }
 
-# --- GÖRSELLEŞTİRME BİLEŞENİ ---
-class VoiceVisualizer(QWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setMinimumHeight(150)
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update)
-        self.timer.start(50)
-        self.parent = parent
-        self.phase = 0
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
-        center_x = self.width() // 2
-        center_y = self.height() // 2
-        
-        # Yapay zeka konuşuyorsa titreşim şiddetini artır
-        amplitude = 20 if self.parent.is_speaking else 2
-        self.phase += 0.2
-
-        # Daire içindeki tanecikleri çiz
-        painter.setBrush(QBrush(QColor(0, 150, 255, 150)))
-        painter.setPen(Qt.PenStyle.NoPen)
-
-        for i in range(8):
-            import math
-            angle = (i * 45) + (self.phase * 10)
-            rad = math.radians(angle)
-            offset = math.sin(self.phase + i) * amplitude
-            x = center_x + int((40 + offset) * math.cos(rad))
-            y = center_y + int((40 + offset) * math.sin(rad))
-            painter.drawEllipse(x, y, 8, 8)
-
-        # Merkez Daire
-        painter.setBrush(QBrush(QColor(0, 100, 200, 200)))
-        painter.drawEllipse(center_x-20, center_y-20, 40, 40)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = BilalAI()
-    window.show()
-    sys.exit(app.exec())
+        function addChatToSidebar(title) {
+            const list = document.getElementById('chat-list');
+            const chatBtn = document.createElement('div');
+            chatBtn.className = "flex items-center gap-3 p-2 hover:bg-[#282a2c] rounded-lg cursor-pointer text-sm truncate";
+            chatBtn.innerHTML = `<i data-lucide="message-square" class="w-4 h-4"></i> ${title.substring(0, 20)}...`;
+            list.prepend(chatBtn);
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
